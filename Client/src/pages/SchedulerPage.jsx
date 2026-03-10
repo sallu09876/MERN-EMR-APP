@@ -19,7 +19,10 @@ export const SchedulerPage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const filteredDoctors = useMemo(() => !departmentFilter ? doctors : doctors.filter((d) => d.department === departmentFilter), [doctors, departmentFilter]);
+  const filteredDoctors = useMemo(
+    () => !departmentFilter ? doctors : doctors.filter((d) => d.department === departmentFilter),
+    [doctors, departmentFilter]
+  );
 
   useEffect(() => { setDoctorId(""); setSlots([]); setSelectedSlot(null); }, [departmentFilter]);
 
@@ -36,21 +39,135 @@ export const SchedulerPage = () => {
 
   useEffect(() => { loadSlots(); }, [loadSlots]);
 
-  const selectedDoctor = doctors.find((d) => d._id === doctorId);
-  const availableCount = slots.filter((s) => s.status === "AVAILABLE").length;
+  const selectedDoctor  = doctors.find((d) => d._id === doctorId);
+  const availableCount  = slots.filter((s) => s.status === "AVAILABLE").length;
 
   return (
     <div style={{ animation: "fadeUp 0.4s ease" }}>
-      <div className="page-header">
+      <style>{`
+        /* ── Filter panel grid ── */
+        .sch-filters {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+        }
+        @media (min-width: 560px) {
+          .sch-filters { grid-template-columns: 1fr 1fr; }
+        }
+        @media (min-width: 900px) {
+          .sch-filters { grid-template-columns: 1fr 1fr 1fr auto; align-items: end; }
+        }
+
+        /* ── Doctor info bar ── */
+        .sch-docinfo {
+          margin-top: 1rem;
+          padding-top: 1rem;
+          border-top: 1px solid var(--border);
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem 1.25rem;
+        }
+        .sch-docinfo-item {
+          font-size: 0.78rem;
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+        }
+
+        /* ── Legend + count row ── */
+        .sch-legend {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+        .sch-legend-items {
+          display: flex;
+          gap: 0.875rem;
+          flex-wrap: wrap;
+        }
+        .sch-legend-item {
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          font-size: 0.72rem;
+          color: var(--text-muted);
+          white-space: nowrap;
+        }
+        .sch-legend-dot {
+          width: 11px; height: 11px;
+          border-radius: 3px;
+          display: inline-block;
+          flex-shrink: 0;
+        }
+        .sch-avail-count {
+          font-size: 0.78rem;
+          font-weight: 600;
+          color: var(--teal);
+          white-space: nowrap;
+        }
+
+        /* ── Selected slot confirmation bar ── */
+        .sch-selected-bar {
+          margin-top: 1.25rem;
+          padding: 0.875rem 1rem;
+          background: linear-gradient(135deg, rgba(14,165,160,0.08), rgba(8,145,178,0.08));
+          border-radius: 10px;
+          border: 1.5px solid rgba(14,165,160,0.25);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+        .sch-selected-info { min-width: 0; }
+        .sch-selected-time {
+          margin: 0;
+          font-weight: 600;
+          color: var(--navy);
+          font-size: 0.92rem;
+          white-space: nowrap;
+        }
+        .sch-selected-meta {
+          margin: 0.1rem 0 0;
+          font-size: 0.78rem;
+          color: var(--text-muted);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .sch-book-btn {
+          flex-shrink: 0;
+          white-space: nowrap;
+        }
+        @media (max-width: 400px) {
+          .sch-selected-bar { flex-direction: column; align-items: stretch; }
+          .sch-book-btn { width: 100%; justify-content: center; }
+        }
+
+        /* ── Page header ── */
+        .sch-header { margin-bottom: 1.25rem; }
+        .sch-header h1 {
+          font-family: 'DM Serif Display', serif;
+          font-size: clamp(1.4rem, 5vw, 1.9rem);
+          color: var(--navy); margin: 0;
+        }
+        .sch-header p { color: var(--text-muted); margin: 0.2rem 0 0; font-size: 0.875rem; }
+      `}</style>
+
+      <div className="sch-header">
         <h1>Appointment Scheduler</h1>
         <p>Select a doctor and date to view available slots</p>
       </div>
 
       <ErrorMessage message={error} />
 
-      {/* Filter panel */}
-      <div style={{ background: "white", borderRadius: "14px", padding: "1.5rem", marginBottom: "1.25rem", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", alignItems: "end" }}>
+      {/* ── Filter panel ── */}
+      <div style={{ background:"white", borderRadius:"14px", padding:"1.25rem", marginBottom:"1.25rem", boxShadow:"var(--shadow-sm)", border:"1px solid var(--border)" }}>
+        <div className="sch-filters">
           <div>
             <label className="form-label">Department</label>
             <select className="form-input" value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)}>
@@ -70,7 +187,12 @@ export const SchedulerPage = () => {
             <input type="date" className="form-input" value={date} min={today} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div>
-            <button className="btn-primary" style={{ width: "100%", justifyContent: "center" }} disabled={!doctorId} onClick={loadSlots}>
+            <button
+              className="btn-primary"
+              style={{ width:"100%", justifyContent:"center" }}
+              disabled={!doctorId}
+              onClick={loadSlots}
+            >
               🔄 Refresh
             </button>
           </div>
@@ -78,14 +200,14 @@ export const SchedulerPage = () => {
 
         {/* Doctor info bar */}
         {selectedDoctor && (
-          <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--border)", display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
+          <div className="sch-docinfo">
             {[
               { icon: "🏥", text: selectedDoctor.department },
               { icon: "⏰", text: `${selectedDoctor.workingHoursStart} – ${selectedDoctor.workingHoursEnd}` },
               { icon: "🕐", text: `${selectedDoctor.slotDuration} min slots` },
               selectedDoctor.breakStart && { icon: "☕", text: `Break ${selectedDoctor.breakStart}–${selectedDoctor.breakEnd}` },
             ].filter(Boolean).map((item, i) => (
-              <span key={i} style={{ fontSize: "0.8rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.375rem" }}>
+              <span key={i} className="sch-docinfo-item">
                 <span>{item.icon}</span>{item.text}
               </span>
             ))}
@@ -93,49 +215,46 @@ export const SchedulerPage = () => {
         )}
       </div>
 
-      {/* Slot grid */}
+      {/* ── Slot area ── */}
       {!doctorId ? (
-        <div style={{ background: "white", borderRadius: "14px", padding: "4rem 2rem", textAlign: "center", border: "2px dashed var(--border)", color: "var(--text-muted)" }}>
-          <div style={{ fontSize: "3rem", marginBottom: "0.75rem" }}>👨‍⚕️</div>
-          <p style={{ fontWeight: 500 }}>Select a doctor to view available slots</p>
-          <p style={{ fontSize: "0.8rem", marginTop: "0.25rem" }}>Use the filters above to find the right doctor</p>
+        <div style={{ background:"white", borderRadius:"14px", padding:"3.5rem 2rem", textAlign:"center", border:"2px dashed var(--border)", color:"var(--text-muted)" }}>
+          <div style={{ fontSize:"2.5rem", marginBottom:"0.75rem" }}>👨‍⚕️</div>
+          <p style={{ fontWeight:500, margin:0 }}>Select a doctor to view available slots</p>
+          <p style={{ fontSize:"0.8rem", margin:"0.25rem 0 0" }}>Use the filters above to find the right doctor</p>
         </div>
       ) : loading ? <Loader text="Loading slots…" /> : (
-        <div style={{ background: "white", borderRadius: "14px", padding: "1.5rem", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
-            <div style={{ display: "flex", gap: "1.25rem" }}>
+        <div style={{ background:"white", borderRadius:"14px", padding:"1.25rem", boxShadow:"var(--shadow-sm)", border:"1px solid var(--border)" }}>
+
+          {/* Legend */}
+          <div className="sch-legend">
+            <div className="sch-legend-items">
               {[
-                { color: "white", border: "var(--border)", label: "Available" },
-                { color: "var(--teal)", border: "var(--teal)", label: "Selected" },
-                { color: "var(--surface-3)", border: "var(--surface-3)", label: "Booked" },
+                { bg:"white",              border:"var(--border)",    label:"Available" },
+                { bg:"var(--teal)",        border:"var(--teal)",      label:"Selected"  },
+                { bg:"var(--surface-2)",   border:"var(--surface-2)", label:"Booked"    },
               ].map((s) => (
-                <span key={s.label} style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                  <span style={{ width: "12px", height: "12px", borderRadius: "4px", background: s.color, border: `1.5px solid ${s.border}`, display: "inline-block" }} />
+                <span key={s.label} className="sch-legend-item">
+                  <span className="sch-legend-dot" style={{ background:s.bg, border:`1.5px solid ${s.border}` }} />
                   {s.label}
                 </span>
               ))}
             </div>
-            <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--teal)" }}>{availableCount} slots available</span>
+            <span className="sch-avail-count">{availableCount} available</span>
           </div>
 
           <SlotGrid slots={slots} selectedSlot={selectedSlot} onSelect={setSelectedSlot} />
 
+          {/* Selected confirmation */}
           {selectedSlot && (
-            <div style={{
-              marginTop: "1.25rem", padding: "1rem 1.25rem",
-              background: "linear-gradient(135deg, rgba(14,165,160,0.08), rgba(8,145,178,0.08))",
-              borderRadius: "10px", border: "1.5px solid rgba(14,165,160,0.25)",
-              display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem"
-            }}>
-              <div>
-                <p style={{ margin: 0, fontWeight: 600, color: "var(--navy)", fontSize: "0.95rem" }}>
-                  ✅ {selectedSlot.start} – {selectedSlot.end} selected
-                </p>
-                <p style={{ margin: "0.125rem 0 0", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                  {selectedDoctor?.name} · {date}
-                </p>
+            <div className="sch-selected-bar">
+              <div className="sch-selected-info">
+                <p className="sch-selected-time">✅ {selectedSlot.start} – {selectedSlot.end} selected</p>
+                <p className="sch-selected-meta">{selectedDoctor?.name} · {date}</p>
               </div>
-              <button className="btn-primary" onClick={() => navigate("/booking", { state: { doctorId, date, slot: selectedSlot } })}>
+              <button
+                className="btn-primary sch-book-btn"
+                onClick={() => navigate("/booking", { state: { doctorId, date, slot: selectedSlot } })}
+              >
                 Book This Slot →
               </button>
             </div>
