@@ -3,9 +3,9 @@ import api from "../../services/api";
 import { ErrorMessage } from "../../components/ErrorMessage";
 import { Loader } from "../../components/Loader";
 
-const EMPTY = { name:"", department:"", email:"", password:"", workingHoursStart:"09:00", workingHoursEnd:"17:00", slotDuration:30, breakStart:"", breakEnd:"" };
+const EMPTY = { name: "", department: "", email: "", password: "", workingHoursStart: "09:00", workingHoursEnd: "17:00", slotDuration: 30, breakStart: "", breakEnd: "" };
 
-const DEPTS = ["Cardiology","Neurology","Orthopedics","Pediatrics","Dermatology","Oncology","Radiology","General Medicine","ENT","Ophthalmology","Psychiatry","Gynecology","Urology"];
+const DEPTS = ["Cardiology", "Neurology", "Orthopedics", "Pediatrics", "Dermatology", "Oncology", "Radiology", "General Medicine", "ENT", "Ophthalmology", "Psychiatry", "Gynecology", "Urology"];
 
 export const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);
@@ -54,9 +54,9 @@ export const DoctorsPage = () => {
   };
 
   const editDoctor = (doc) => {
-    setForm({ name:doc.name, department:doc.department, email:"", password:"", workingHoursStart:doc.workingHoursStart||"09:00", workingHoursEnd:doc.workingHoursEnd||"17:00", slotDuration:doc.slotDuration||30, breakStart:doc.breakStart||"", breakEnd:doc.breakEnd||"" });
+    setForm({ name: doc.name, department: doc.department, email: "", password: "", workingHoursStart: doc.workingHoursStart || "09:00", workingHoursEnd: doc.workingHoursEnd || "17:00", slotDuration: doc.slotDuration || 30, breakStart: doc.breakStart || "", breakEnd: doc.breakEnd || "" });
     setEditingId(doc._id); setError(""); setShowForm(true);
-    setTimeout(() => document.getElementById("doctor-form")?.scrollIntoView({ behavior:"smooth", block:"start" }), 100);
+    setTimeout(() => document.getElementById("doctor-form")?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
   };
 
   const F = ({ label, children }) => (
@@ -68,13 +68,13 @@ export const DoctorsPage = () => {
 
   return (
     <div>
-      <div style={{ display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:"1.75rem",animation:"fadeUp 0.4s ease" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.75rem", animation: "fadeUp 0.4s ease" }}>
         <div>
-          <h1 style={{ fontFamily:"'DM Serif Display',serif",fontSize:"2rem",color:"var(--navy)",margin:0 }}>Manage Doctors</h1>
-          <p style={{ color:"var(--text-muted)",margin:"0.25rem 0 0",fontSize:"0.875rem" }}>{doctors.length} doctor{doctors.length!==1?"s":""} registered</p>
+          <h1 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "2rem", color: "var(--navy)", margin: 0 }}>Manage Doctors</h1>
+          <p style={{ color: "var(--text-muted)", margin: "0.25rem 0 0", fontSize: "0.875rem" }}>{doctors.length} doctor{doctors.length !== 1 ? "s" : ""} registered</p>
         </div>
         {!showForm && (
-          <button className="btn-primary" onClick={()=>setShowForm(true)}>+ Add Doctor</button>
+          <button className="btn-primary" onClick={() => setShowForm(true)}>+ Add Doctor</button>
         )}
       </div>
 
@@ -83,67 +83,67 @@ export const DoctorsPage = () => {
       {/* Form panel */}
       {showForm && (
         <div id="doctor-form" style={{
-          background:"white", borderRadius:"16px", padding:"1.75rem",
-          border:"2px solid var(--teal)", boxShadow:"0 0 0 4px var(--teal-glow)",
-          marginBottom:"1.5rem", animation:"fadeUp 0.3s ease",
+          background: "white", borderRadius: "16px", padding: "1.75rem",
+          border: "2px solid var(--teal)", boxShadow: "0 0 0 4px var(--teal-glow)",
+          marginBottom: "1.5rem", animation: "fadeUp 0.3s ease",
         }}>
-          <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
             <div>
-              <h2 style={{ margin:0,fontFamily:"'DM Serif Display',serif",fontSize:"1.3rem",color:"var(--navy)" }}>
+              <h2 style={{ margin: 0, fontFamily: "'DM Serif Display',serif", fontSize: "1.3rem", color: "var(--navy)" }}>
                 {editingId ? "Edit Doctor" : "Add New Doctor"}
               </h2>
-              <p style={{ margin:"0.25rem 0 0",fontSize:"0.8rem",color:"var(--text-muted)" }}>
+              <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "var(--text-muted)" }}>
                 {editingId ? "Update schedule and department details" : "Create a doctor account with login credentials"}
               </p>
             </div>
-            <button onClick={resetForm} style={{ background:"none",border:"none",cursor:"pointer",color:"var(--text-muted)",fontSize:"1.5rem",lineHeight:1 }}>×</button>
+            <button onClick={resetForm} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: "1.5rem", lineHeight: 1 }}>×</button>
           </div>
 
-          <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))",gap:"1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
             <F label="Full Name *">
-              <input className="form-input" name="name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Dr. John Smith" />
+              <input className="form-input" name="name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Dr. John Smith" />
             </F>
             <F label="Department *">
-              <select className="form-input" name="department" value={form.department} onChange={e=>setForm(f=>({...f,department:e.target.value}))}>
+              <select className="form-input" name="department" value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))}>
                 <option value="">Select department…</option>
-                {DEPTS.map(d=><option key={d} value={d}>{d}</option>)}
+                {DEPTS.map(d => <option key={d} value={d}>{d}</option>)}
                 <option value="__custom">Other…</option>
               </select>
             </F>
             {form.department === "__custom" && (
               <F label="Custom Department">
-                <input className="form-input" placeholder="Enter department" onChange={e=>setForm(f=>({...f,department:e.target.value}))} />
+                <input className="form-input" placeholder="Enter department" onChange={e => setForm(f => ({ ...f, department: e.target.value }))} />
               </F>
             )}
             {!editingId && (
               <>
                 <F label="Email (login) *">
-                  <input className="form-input" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} placeholder="doctor@hospital.com" />
+                  <input className="form-input" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="doctor@hospital.com" />
                 </F>
                 <F label="Password *">
-                  <input className="form-input" type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))} placeholder="Min 6 characters" />
+                  <input className="form-input" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Min 6 characters" />
                 </F>
               </>
             )}
             <F label="Work Start">
-              <input className="form-input" type="time" value={form.workingHoursStart} onChange={e=>setForm(f=>({...f,workingHoursStart:e.target.value}))} />
+              <input className="form-input" type="time" value={form.workingHoursStart} onChange={e => setForm(f => ({ ...f, workingHoursStart: e.target.value }))} />
             </F>
             <F label="Work End">
-              <input className="form-input" type="time" value={form.workingHoursEnd} onChange={e=>setForm(f=>({...f,workingHoursEnd:e.target.value}))} />
+              <input className="form-input" type="time" value={form.workingHoursEnd} onChange={e => setForm(f => ({ ...f, workingHoursEnd: e.target.value }))} />
             </F>
             <F label="Slot Duration (min)">
-              <input className="form-input" type="number" min={5} max={120} value={form.slotDuration} onChange={e=>setForm(f=>({...f,slotDuration:e.target.value}))} />
+              <input className="form-input" type="number" min={5} max={120} value={form.slotDuration} onChange={e => setForm(f => ({ ...f, slotDuration: e.target.value }))} />
             </F>
             <div />
             <F label="Break Start (optional)">
-              <input className="form-input" type="time" value={form.breakStart} onChange={e=>setForm(f=>({...f,breakStart:e.target.value}))} />
+              <input className="form-input" type="time" value={form.breakStart} onChange={e => setForm(f => ({ ...f, breakStart: e.target.value }))} />
             </F>
             <F label="Break End (optional)">
-              <input className="form-input" type="time" value={form.breakEnd} onChange={e=>setForm(f=>({...f,breakEnd:e.target.value}))} />
+              <input className="form-input" type="time" value={form.breakEnd} onChange={e => setForm(f => ({ ...f, breakEnd: e.target.value }))} />
             </F>
           </div>
 
-          <div style={{ display:"flex",gap:"0.75rem",marginTop:"1.5rem",paddingTop:"1.25rem",borderTop:"1px solid var(--border)" }}>
+          <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem", paddingTop: "1.25rem", borderTop: "1px solid var(--border)" }}>
             <button className="btn-primary" onClick={saveDoctor} disabled={loading}>
               {loading ? "Saving…" : editingId ? "Save Changes" : "Add Doctor"}
             </button>
@@ -154,15 +154,15 @@ export const DoctorsPage = () => {
 
       {/* Table */}
       {fetching ? <Loader text="Loading doctors…" /> : (
-        <div style={{ background:"white",borderRadius:"14px",boxShadow:"var(--shadow-sm)",border:"1px solid var(--border)",overflow:"hidden",animation:"fadeUp 0.4s ease 0.1s both" }}>
+        <div style={{ background: "white", borderRadius: "14px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", overflow: "hidden", animation: "fadeUp 0.4s ease 0.1s both" }}>
           {doctors.length === 0 ? (
-            <div style={{ padding:"4rem",textAlign:"center",color:"var(--text-muted)" }}>
-              <div style={{ fontSize:"3rem",marginBottom:"0.75rem" }}>👨‍⚕️</div>
-              <p style={{ fontWeight:500,margin:0 }}>No doctors added yet</p>
-              <p style={{ fontSize:"0.8rem",marginTop:"0.25rem" }}>Click "Add Doctor" to get started</p>
+            <div style={{ padding: "4rem", textAlign: "center", color: "var(--text-muted)" }}>
+              <div style={{ fontSize: "3rem", marginBottom: "0.75rem" }}>👨‍⚕️</div>
+              <p style={{ fontWeight: 500, margin: 0 }}>No doctors added yet</p>
+              <p style={{ fontSize: "0.8rem", marginTop: "0.25rem" }}>Click "Add Doctor" to get started</p>
             </div>
           ) : (
-            <div style={{ overflowX:"auto" }}>
+            <div style={{ overflowX: "auto" }}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -171,46 +171,46 @@ export const DoctorsPage = () => {
                     <th>Working Hours</th>
                     <th>Slot</th>
                     <th>Break</th>
-                    <th style={{ textAlign:"right" }}>Actions</th>
+                    <th style={{ textAlign: "right" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {doctors.map((doc, i) => (
-                    <tr key={doc._id} style={{ animation:`fadeUp 0.3s ease ${i*0.04}s both` }}>
+                    <tr key={doc._id} style={{ animation: `fadeUp 0.3s ease ${i * 0.04}s both` }}>
                       <td>
-                        <div style={{ display:"flex",alignItems:"center",gap:"0.75rem" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                           <div style={{
-                            width:"36px",height:"36px",borderRadius:"50%",
-                            background:"linear-gradient(135deg, var(--teal) 0%, #0891b2 100%)",
-                            display:"flex",alignItems:"center",justifyContent:"center",
-                            color:"white",fontWeight:700,fontSize:"0.8rem",flexShrink:0,
+                            width: "36px", height: "36px", borderRadius: "50%",
+                            background: "linear-gradient(135deg, var(--teal) 0%, #0891b2 100%)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            color: "white", fontWeight: 700, fontSize: "0.8rem", flexShrink: 0,
                           }}>
                             {doc.name?.charAt(0)?.toUpperCase()}
                           </div>
                           <div>
-                            <div style={{ fontWeight:600,fontSize:"0.9rem" }}>{doc.name}</div>
-                            <div style={{ fontSize:"0.75rem",color:"var(--text-muted)" }}>{doc.userId?.email || "—"}</div>
+                            <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{doc.name}</div>
+                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{doc.userId?.email || "—"}</div>
                           </div>
                         </div>
                       </td>
                       <td>
-                        <span style={{ background:"rgba(14,165,160,0.1)",color:"var(--teal)",padding:"0.25rem 0.75rem",borderRadius:"999px",fontSize:"0.78rem",fontWeight:600 }}>
+                        <span style={{ background: "rgba(14,165,160,0.1)", color: "var(--teal)", padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.78rem", fontWeight: 600 }}>
                           {doc.department}
                         </span>
                       </td>
-                      <td style={{ color:"var(--text-secondary)",fontSize:"0.875rem" }}>
+                      <td style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
                         {doc.workingHoursStart} – {doc.workingHoursEnd}
                       </td>
-                      <td style={{ color:"var(--text-secondary)",fontSize:"0.875rem" }}>
+                      <td style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
                         {doc.slotDuration} min
                       </td>
-                      <td style={{ color:"var(--text-muted)",fontSize:"0.83rem" }}>
-                        {doc.breakStart ? `${doc.breakStart}–${doc.breakEnd}` : <span style={{ opacity:0.5 }}>—</span>}
+                      <td style={{ color: "var(--text-muted)", fontSize: "0.83rem" }}>
+                        {doc.breakStart ? `${doc.breakStart}–${doc.breakEnd}` : <span style={{ opacity: 0.5 }}>—</span>}
                       </td>
                       <td>
-                        <div style={{ display:"flex",gap:"0.5rem",justifyContent:"flex-end" }}>
-                          <button className="btn-secondary btn-sm" onClick={()=>editDoctor(doc)}>Edit</button>
-                          <button className="btn-danger btn-sm" onClick={()=>deleteDoctor(doc._id)}>Delete</button>
+                        <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+                          <button className="btn-secondary btn-sm" onClick={() => editDoctor(doc)}>Edit</button>
+                          <button className="btn-danger btn-sm" onClick={() => deleteDoctor(doc._id)}>Delete</button>
                         </div>
                       </td>
                     </tr>

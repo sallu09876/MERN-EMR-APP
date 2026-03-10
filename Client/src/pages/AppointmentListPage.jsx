@@ -117,7 +117,7 @@ export const AppointmentListPage = () => {
                     <td>
                       <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", flexWrap: "wrap" }}>
                         <button className="btn-secondary btn-sm" disabled={updatingId === a._id || a.status === "CANCELLED"} onClick={() => setEditingAppointment(a)}>Edit</button>
-                        <button className="btn-secondary btn-sm" disabled={updatingId === a._id || ["ARRIVED","COMPLETED","CANCELLED"].includes(a.status)} onClick={() => handleArrive(a._id)}
+                        <button className="btn-secondary btn-sm" disabled={updatingId === a._id || ["ARRIVED", "COMPLETED", "CANCELLED"].includes(a.status)} onClick={() => handleArrive(a._id)}
                           style={{ borderColor: "#86efac", color: "#16a34a" }}
                           onMouseEnter={e => { if (!e.currentTarget.disabled) { e.currentTarget.style.background = "#f0fdf4"; e.currentTarget.style.borderColor = "#16a34a"; } }}
                           onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.borderColor = "#86efac"; }}
