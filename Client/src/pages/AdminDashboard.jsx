@@ -34,12 +34,14 @@ export const AdminDashboard = () => {
           box-shadow: var(--shadow-sm);
           position: relative;
           cursor: pointer;
-          /* Critical: isolate so z-index stacking is per-card */
           isolation: isolate;
-          /* Prevent any overflow from child elements capturing taps */
           overflow: hidden;
           transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
-          -webkit-tap-highlight-color: rgba(0,0,0,0.04);
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+        }
+        @media (max-width: 767px) {
+          .anc-card { min-height: 80px; }
         }
         .anc-card:hover  { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--anc-color); }
         .anc-card:active { transform: translateY(0); }

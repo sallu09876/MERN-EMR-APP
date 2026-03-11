@@ -40,20 +40,39 @@ export const AppointmentListPage = () => {
 
   return (
     <div style={{ animation: "fadeUp 0.4s ease" }}>
+      <style>{`
+        @media (max-width: 767px) {
+          .alp-filter-bar { flex-direction: column !important; align-items: stretch !important; }
+          .alp-filter-bar > div:first-of-type, .alp-filter-bar > div:nth-of-type(2) { min-width: 0; }
+          .alp-filter-bar .form-input { width: 100% !important; }
+          .alp-filter-count { margin-left: 0 !important; margin-top: 0.25rem; text-align: center; }
+          .alp-table-wrap { display: none !important; }
+          .alp-cards { display: block !important; }
+          .alp-card { background: white; border-radius: 12px; padding: 1rem; margin: 0 0.75rem 0.75rem; border: 1px solid var(--border); }
+          .alp-card:first-of-type { margin-top: 0.75rem; }
+          .alp-card-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+          .alp-card-actions button { flex: 1; min-width: 0; min-height: 40px; }
+          .alp-pagination { flex-direction: column; gap: 0.75rem; align-items: center; padding: 1rem !important; }
+        }
+        @media (min-width: 768px) {
+          .alp-cards { display: none !important; }
+        }
+        .alp-cards { display: none; }
+      `}</style>
       <div className="page-header">
-        <h1>Appointments</h1>
+        <h1 style={{ fontSize: "clamp(1.4rem, 4vw, 1.75rem)" }}>Appointments</h1>
         <p>View and manage all scheduled appointments</p>
       </div>
 
       {/* Filters */}
-      <div style={{ background: "white", borderRadius: "14px", padding: "1.25rem 1.5rem", marginBottom: "1.25rem", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "flex-end" }}>
-        <div>
+      <div className="alp-filter-bar" style={{ background: "white", borderRadius: "14px", padding: "1.25rem 1.5rem", marginBottom: "1.25rem", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "flex-end" }}>
+        <div style={{ flex: "1 1 140px", minWidth: 0 }}>
           <label className="form-label">Date</label>
-          <input type="date" className="form-input" style={{ width: "auto" }} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
+          <input type="date" className="form-input" style={{ width: "100%" }} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
         </div>
-        <div>
+        <div style={{ flex: "1 1 140px", minWidth: 0 }}>
           <label className="form-label">Status</label>
-          <select className="form-input" style={{ width: "auto" }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <select className="form-input" style={{ width: "100%" }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">All Statuses</option>
             <option value="BOOKED">Booked</option>
             <option value="ARRIVED">Arrived</option>
@@ -64,7 +83,7 @@ export const AppointmentListPage = () => {
         {(dateFilter || statusFilter) && (
           <button className="btn-secondary" onClick={() => { setDateFilter(""); setStatusFilter(""); }}>Clear Filters</button>
         )}
-        <div style={{ marginLeft: "auto", fontSize: "0.8rem", color: "var(--text-muted)", alignSelf: "center" }}>
+        <div className="alp-filter-count" style={{ marginLeft: "auto", fontSize: "0.8rem", color: "var(--text-muted)", alignSelf: "center" }}>
           {pagination.total} appointment{pagination.total !== 1 ? "s" : ""}
         </div>
       </div>
@@ -81,7 +100,37 @@ export const AppointmentListPage = () => {
 
       {loading ? <Loader /> : (
         <div style={{ background: "white", borderRadius: "14px", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", overflow: "hidden" }}>
-          <div style={{ overflowX: "auto" }}>
+          {/* Mobile cards */}
+          <div className="alp-cards">
+            {appointments.map((a) => (
+              <div key={a._id} className="alp-card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.5rem" }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: "0.95rem" }}>{a.patientId?.name}</div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>{a.doctorId?.name} · {a.doctorId?.department}</div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
+                      {new Date(a.appointmentDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} · {a.slotStartTime}–{a.slotEndTime}
+                    </div>
+                  </div>
+                  <span className={`badge ${BADGE[a.status] || ""}`}>{a.status}</span>
+                </div>
+                <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: "0.35rem" }}>{a.purpose || "—"}</div>
+                <div className="alp-card-actions">
+                  <button className="btn-secondary btn-sm" disabled={updatingId === a._id || a.status === "CANCELLED"} onClick={() => setEditingAppointment(a)}>Edit</button>
+                  <button className="btn-secondary btn-sm" disabled={updatingId === a._id || ["ARRIVED", "COMPLETED", "CANCELLED"].includes(a.status)} onClick={() => handleArrive(a._id)} style={{ borderColor: "#86efac", color: "#16a34a" }}>Arrived</button>
+                  <button className="btn-danger btn-sm" disabled={updatingId === a._id} onClick={() => handleDelete(a._id)}>Delete</button>
+                </div>
+              </div>
+            ))}
+            {!appointments.length && (
+              <div style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
+                <div style={{ fontSize: "2rem" }}>📋</div>
+                <div style={{ marginTop: "0.5rem" }}>No appointments found</div>
+              </div>
+            )}
+          </div>
+          {/* Desktop table */}
+          <div className="alp-table-wrap" style={{ overflowX: "auto" }}>
             <table className="data-table">
               <thead>
                 <tr>
@@ -138,7 +187,7 @@ export const AppointmentListPage = () => {
           </div>
 
           {/* Pagination */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem 1.5rem", borderTop: "1px solid var(--border)", background: "var(--surface-2)" }}>
+          <div className="alp-pagination" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem 1.5rem", borderTop: "1px solid var(--border)", background: "var(--surface-2)", flexWrap: "wrap", gap: "0.5rem" }}>
             <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Page {pagination.page} of {pagination.pages}</span>
             <div style={{ display: "flex", gap: "0.5rem" }}>
               <button className="btn-secondary btn-sm" disabled={pagination.page <= 1} onClick={() => loadPage(pagination.page - 1)}>← Prev</button>

@@ -142,10 +142,18 @@ export const SchedulerPage = () => {
         .sch-book-btn {
           flex-shrink: 0;
           white-space: nowrap;
+          min-height: 44px;
+          -webkit-tap-highlight-color: transparent;
         }
-        @media (max-width: 400px) {
-          .sch-selected-bar { flex-direction: column; align-items: stretch; }
+        @media (max-width: 767px) {
+          .sch-selected-bar { flex-direction: column; align-items: stretch; gap: 0.75rem; }
           .sch-book-btn { width: 100%; justify-content: center; }
+          .sch-filters { grid-template-columns: 1fr !important; gap: 1rem; }
+          .sch-filters .btn-primary { min-height: 44px; width: 100%; }
+          .sch-filter-panel { padding: 1rem !important; }
+          .sch-legend { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+          .sch-legend-items { flex-wrap: wrap; }
+          .sch-slot-area { padding: 1rem !important; }
         }
 
         /* ── Page header ── */
@@ -166,7 +174,7 @@ export const SchedulerPage = () => {
       <ErrorMessage message={error} />
 
       {/* ── Filter panel ── */}
-      <div style={{ background:"white", borderRadius:"14px", padding:"1.25rem", marginBottom:"1.25rem", boxShadow:"var(--shadow-sm)", border:"1px solid var(--border)" }}>
+      <div className="sch-filter-panel" style={{ background:"white", borderRadius:"14px", padding:"1.25rem", marginBottom:"1.25rem", boxShadow:"var(--shadow-sm)", border:"1px solid var(--border)" }}>
         <div className="sch-filters">
           <div>
             <label className="form-label">Department</label>
@@ -223,7 +231,7 @@ export const SchedulerPage = () => {
           <p style={{ fontSize:"0.8rem", margin:"0.25rem 0 0" }}>Use the filters above to find the right doctor</p>
         </div>
       ) : loading ? <Loader text="Loading slots…" /> : (
-        <div style={{ background:"white", borderRadius:"14px", padding:"1.25rem", boxShadow:"var(--shadow-sm)", border:"1px solid var(--border)" }}>
+        <div className="sch-slot-area" style={{ background:"white", borderRadius:"14px", padding:"1.25rem", boxShadow:"var(--shadow-sm)", border:"1px solid var(--border)" }}>
 
           {/* Legend */}
           <div className="sch-legend">

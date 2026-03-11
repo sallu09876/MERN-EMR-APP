@@ -63,7 +63,7 @@ export const BookingPage = () => {
   );
 
   return (
-    <div style={{ animation:"fadeUp 0.4s ease", maxWidth:"680px" }}>
+    <div style={{ animation:"fadeUp 0.4s ease", maxWidth:"680px", width: "100%" }}>
       <style>{`
         /* ── Slot summary bar ── */
         .bk-summary {
@@ -196,6 +196,14 @@ export const BookingPage = () => {
           justify-content: center;
           min-width: 160px;
         }
+        @media (max-width: 767px) {
+          .bk-type-row { flex-direction: column; }
+          .bk-type-btn { min-height: 48px; }
+          .bk-actions { flex-direction: column; }
+          .bk-actions button { width: 100%; justify-content: center; min-height: 48px; }
+          .bk-search-row { flex-direction: column; }
+          .bk-search-row .form-input { width: 100%; }
+        }
 
         /* ── Page header ── */
         .bk-header { margin-bottom: 1.1rem; }
@@ -277,14 +285,14 @@ export const BookingPage = () => {
                 </button>
               </div>
               {searchResults.length > 0 && (
-                <div style={{ border:"1px solid var(--border)", borderRadius:"10px", overflow:"hidden", maxHeight:"200px", overflowY:"auto" }}>
+                <div style={{ border:"1px solid var(--border)", borderRadius:"10px", overflow:"hidden", maxHeight:"200px", overflowY:"auto", WebkitOverflowScrolling: "touch" }}>
                   {searchResults.map((p) => (
                     <label key={p._id} style={{
                       display:"flex", alignItems:"center", gap:"0.75rem",
-                      padding:"0.7rem 0.875rem", cursor:"pointer",
+                      padding:"0.7rem 0.875rem", cursor:"pointer", minHeight: 44,
                       borderBottom:"1px solid var(--border)",
                       background: selectedPatientId === p._id ? "var(--teal-glow)" : "white",
-                      transition:"background 0.13s"
+                      transition:"background 0.13s", WebkitTapHighlightColor: "transparent"
                     }}>
                       <input type="radio" name="patient" value={p._id} checked={selectedPatientId === p._id} onChange={() => setSelectedPatientId(p._id)} style={{ accentColor:"var(--teal)", flexShrink:0 }} />
                       <div>

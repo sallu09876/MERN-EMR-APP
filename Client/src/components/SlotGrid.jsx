@@ -23,9 +23,14 @@ export const SlotGrid = ({ slots, selectedSlot, onSelect }) => {
       <style>{`
         .slot-grid {
           display: grid;
-          /* Mobile: 3 equal columns — big enough to tap comfortably */
           grid-template-columns: repeat(3, 1fr);
           gap: 0.5rem;
+        }
+        @media (max-width: 767px) {
+          .slot-grid { gap: 0.5rem; }
+          .sg-btn { min-height: 52px; padding: 0.6rem 0.3rem; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+          .sg-time { font-size: 0.75rem; }
+          .sg-end { font-size: 0.6rem; }
         }
         @media (min-width: 400px) {
           .slot-grid { grid-template-columns: repeat(4, 1fr); }

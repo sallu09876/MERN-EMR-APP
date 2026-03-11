@@ -4,8 +4,8 @@ import { useAuth } from "../context/AuthContext.jsx";
 import api from "../services/api.js";
 
 const QuickCard = ({ to, icon, title, desc, accent, delay }) => (
-  <Link to={to} style={{ textDecoration: "none" }}>
-    <div style={{
+  <Link to={to} style={{ textDecoration: "none", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}>
+    <div className="rcd-quick-card" style={{
       background: "white", borderRadius: "16px", padding: "1.5rem",
       border: `1px solid var(--border)`, cursor: "pointer",
       boxShadow: "var(--shadow-sm)", animation: `fadeUp 0.4s ease ${delay}s both`,
@@ -40,6 +40,13 @@ export const ReceptionistDashboard = () => {
 
   return (
     <div>
+      <style>{`
+        @media (max-width: 767px) {
+          .rcd-quick-card { min-height: 100px; }
+          .rcd-today { padding: 1.25rem 1.5rem !important; }
+          .rcd-today-num { font-size: 2.25rem !important; }
+        }
+      `}</style>
       <div style={{ marginBottom: "2rem", animation: "fadeUp 0.4s ease" }}>
         <p style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--teal)", margin: "0 0 0.25rem" }}>{greeting}</p>
         <h1 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "2rem", color: "var(--navy)", margin: 0 }}>{user?.name || "Receptionist"}</h1>
@@ -47,7 +54,7 @@ export const ReceptionistDashboard = () => {
       </div>
 
       {/* Today stat */}
-      <div style={{
+      <div className="rcd-today" style={{
         background: "linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%)",
         borderRadius: "16px", padding: "1.5rem 2rem", marginBottom: "1.75rem",
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -55,7 +62,7 @@ export const ReceptionistDashboard = () => {
       }}>
         <div>
           <p style={{ margin: 0, fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.45)" }}>Today's Appointments</p>
-          <p style={{ margin: "0.25rem 0 0", fontSize: "3rem", fontWeight: 700, fontFamily: "'DM Serif Display',serif", color: "white", lineHeight: 1 }}>{todayCount}</p>
+          <p className="rcd-today-num" style={{ margin: "0.25rem 0 0", fontSize: "3rem", fontWeight: 700, fontFamily: "'DM Serif Display',serif", color: "white", lineHeight: 1 }}>{todayCount}</p>
         </div>
         <div style={{ fontSize: "3.5rem", opacity: 0.2 }}>📅</div>
       </div>

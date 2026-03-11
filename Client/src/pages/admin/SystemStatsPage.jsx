@@ -3,7 +3,7 @@ import api from "../../services/api.js";
 import { Loader } from "../../components/Loader";
 
 const StatCard = ({ icon, label, value, color, delay = 0, sub = "" }) => (
-  <div style={{
+  <div className="ssp-stat-card" style={{
     background: "white", borderRadius: "16px", padding: "1.5rem",
     border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)",
     display: "flex", flexDirection: "column", gap: "0.875rem",
@@ -46,8 +46,14 @@ export const SystemStatsPage = () => {
 
   return (
     <div>
+      <style>{`
+        @media (max-width: 767px) {
+          .ssp-grid { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+          .ssp-stat-card { padding: 1.25rem !important; }
+        }
+      `}</style>
       <div style={{ marginBottom: "1.75rem", animation: "fadeUp 0.4s ease" }}>
-        <h1 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "2rem", color: "var(--navy)", margin: 0 }}>System Statistics</h1>
+        <h1 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(1.4rem, 4vw, 2rem)", color: "var(--navy)", margin: 0 }}>System Statistics</h1>
         <p style={{ color: "var(--text-muted)", margin: "0.25rem 0 0", fontSize: "0.875rem" }}>Real-time overview of your clinic's activity</p>
       </div>
 
@@ -57,7 +63,7 @@ export const SystemStatsPage = () => {
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: "1rem" }}>
+      <div className="ssp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: "1rem" }}>
         {!stats ? (
           <>
             <SkeletonCard delay={0} />

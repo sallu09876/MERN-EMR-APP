@@ -23,20 +23,27 @@ export const AppointmentForm = ({ appointment, onSaved, onCancel }) => {
   };
 
   return (
-    <div style={{
+    <div className="apf-form" style={{
       background: "white", borderRadius: "14px", padding: "1.5rem",
       border: "2px solid var(--teal)", boxShadow: "0 0 0 4px var(--teal-glow)",
       animation: "fadeUp 0.3s ease",
       marginBottom: "1rem"
     }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
-        <div>
+      <style>{`
+        @media (max-width: 767px) {
+          .apf-form { padding: 1rem !important; }
+          .apf-form form { grid-template-columns: 1fr !important; }
+          .apf-form .apf-close { min-width: 44px; min-height: 44px; padding: 0.25rem; }
+        }
+      `}</style>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.5rem" }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
           <h3 style={{ margin: 0, fontSize: "1rem", color: "var(--navy)" }}>Edit Appointment</h3>
-          <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+          <p style={{ margin: "0.25rem 0 0", fontSize: "0.8rem", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {appointment.patientId?.name} · {appointment.doctorId?.name} · {appointment.slotStartTime}–{appointment.slotEndTime}
           </p>
         </div>
-        <button onClick={onCancel} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: "1.25rem" }}>×</button>
+        <button type="button" className="apf-close" onClick={onCancel} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: "1.25rem" }} aria-label="Close">×</button>
       </div>
 
       <ErrorMessage message={error} />
