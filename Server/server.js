@@ -13,6 +13,8 @@ import patientRoutes from "./routes/patientRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 import slotRoutes from "./routes/slotRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import departmentRoutes from "./routes/departmentRoutes.js";
+import { seedDepartments } from "./controllers/departmentController.js";
 
 dotenv.config();
 
@@ -60,6 +62,7 @@ app.use("/api/patients", patientRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/slots", slotRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/departments", departmentRoutes);
 
 // 404 + error handlers
 app.use(notFound);

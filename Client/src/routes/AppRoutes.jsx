@@ -9,9 +9,9 @@ import { ReceptionistDashboard } from "../pages/ReceptionistDashboard.jsx";
 import { SchedulerPage } from "../pages/SchedulerPage.jsx";
 import { BookingPage } from "../pages/BookingPage.jsx";
 import { AppointmentListPage } from "../pages/AppointmentListPage.jsx";
-import { DoctorsPage } from "../pages/admin/DoctorsPage.jsx";
 import { ReceptionistsPage } from "../pages/admin/ReceptionistsPage.jsx";
 import { SystemStatsPage } from "../pages/admin/SystemStatsPage.jsx";
+import { DoctorsPage } from "../pages/admin/DoctorsPage.jsx";
 
 export const AppRoutes = () => (
   <Routes>
