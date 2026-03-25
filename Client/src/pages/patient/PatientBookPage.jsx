@@ -156,7 +156,7 @@ export const PatientBookPage = () => {
     <div style={{ animation: "fadeUp 0.4s ease", maxWidth: 900, width: "100%", padding: "0 0.5rem" }}>
       <div className="page-header">
         <h1>Book Appointment</h1>
-        <p>Select a doctor, choose date, then pay ₹1 to confirm</p>
+        <p>Select a doctor, choose date, then pay ₹100 to confirm</p>
       </div>
 
       {doctorsLoading ? (
@@ -220,14 +220,14 @@ export const PatientBookPage = () => {
                         ✅ {selectedSlot.start} – {selectedSlot.end}
                       </div>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                        Pay ₹1 to confirm
+                        Pay ₹100 to confirm
                       </div>
                       <div style={{ marginTop: "0.35rem", color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                        🔒 Secure payment powered by Razorpay · ₹1 booking fee
+                        🔒 Secure payment powered by Razorpay · ₹100 booking fee
                       </div>
                     </div>
                     <button className="btn-primary" type="button" onClick={handlePay} disabled={paying}>
-                      {paying ? "Opening payment…" : "Book & Pay ₹1 →"}
+                      {paying ? "Opening payment…" : "Pay ₹100 & Book Now→"}
                     </button>
                   </div>
                 )}

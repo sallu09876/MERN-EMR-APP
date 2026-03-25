@@ -120,7 +120,7 @@ export const createOrder = async (req, res, next) => {
 
     const { keyId, mode } = resolveRazorpayConfig();
     const razorpay = getRazorpay();
-    const amount = 100; // paise = ₹1
+    const amount = 10000;
     const order = await razorpay.orders.create({
       amount,
       currency: "INR",
