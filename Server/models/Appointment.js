@@ -37,6 +37,21 @@ const appointmentSchema = new mongoose.Schema(
       enum: ["BOOKED", "ARRIVED", "COMPLETED", "CANCELLED"],
       default: "BOOKED",
     },
+    // Who booked this appointment
+    bookedBy: {
+      type: String,
+      enum: ["RECEPTIONIST", "PATIENT"],
+      default: "RECEPTIONIST",
+    },
+
+    // Razorpay payment linkage (PATIENT bookings only)
+    paymentId: { type: String, default: "" },
+    paymentStatus: {
+      type: String,
+      enum: ["PAID", "UNPAID"],
+      default: "UNPAID",
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

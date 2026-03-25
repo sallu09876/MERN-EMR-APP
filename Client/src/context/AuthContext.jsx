@@ -39,6 +39,18 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const patientLogin = useCallback(async (email, password) => {
+    setLoading(true);
+    try {
+      const { data } = await api.post("/api/patient/auth/login", { email, password });
+      setUser(data.user);
+      setAccessToken(data.accessToken);
+      return data.user;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await api.post("/api/auth/logout");
@@ -49,12 +61,23 @@ export const AuthProvider = ({ children }) => {
     setAccessToken(null);
   }, []);
 
+  const setSession = useCallback((nextUser, nextAccessToken) => {
+    if (nextUser) localStorage.setItem("emr_user", JSON.stringify(nextUser));
+    else localStorage.removeItem("emr_user");
+    if (nextAccessToken) localStorage.setItem("emr_access_token", nextAccessToken);
+    else localStorage.removeItem("emr_access_token");
+    setUser(nextUser);
+    setAccessToken(nextAccessToken);
+  }, []);
+
   const value = {
     user,
     accessToken,
     loading,
     isAuthenticated: !!user && !!accessToken,
     login,
+    patientLogin,
+    setSession,
     logout,
   };
 

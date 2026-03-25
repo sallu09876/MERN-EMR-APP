@@ -14,7 +14,7 @@ const router = express.Router();
 router.get(
   "/",
   authenticate,
-  authorizeRoles("SUPER_ADMIN", "DOCTOR", "RECEPTIONIST"),
+  authorizeRoles("SUPER_ADMIN", "DOCTOR", "RECEPTIONIST", "PATIENT"),
   getDoctors
 );
 

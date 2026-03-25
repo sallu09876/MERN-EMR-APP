@@ -19,12 +19,19 @@ const ROLE_LINKS = {
   DOCTOR: [
     { to: "/doctor",              label: "My Appointments" },
   ],
+  PATIENT: [
+    { to: "/patient/dashboard",     label: "Dashboard" },
+    { to: "/patient/book",          label: "Book Appointment" },
+    { to: "/patient/appointments", label: "My Appointments" },
+    { to: "/patient/profile",       label: "My Profile" },
+  ],
 };
 
 const ROLE_META = {
   SUPER_ADMIN:  { label: "Super Admin",  bg: "rgba(14,165,160,0.18)", text: "#14b8b3" },
   RECEPTIONIST: { label: "Receptionist", bg: "rgba(139,92,246,0.18)", text: "#a78bfa" },
   DOCTOR:       { label: "Doctor",       bg: "rgba(16,185,129,0.18)", text: "#34d399" },
+  PATIENT:      { label: "Patient",      bg: "rgba(14,165,160,0.16)", text: "#0ea5a0" },
 };
 
 export const Navbar = () => {

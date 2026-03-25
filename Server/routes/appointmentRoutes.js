@@ -8,8 +8,42 @@ import {
   deleteAppointment,
   markArrived,
 } from "../controllers/appointmentController.js";
+import {
+  availableSlots,
+  patientBook,
+  myAppointments,
+  cancelMyAppointment,
+} from "../controllers/patientAppointmentController.js";
 
 const router = express.Router();
+
+router.get(
+  "/available-slots",
+  authenticate,
+  authorizeRoles("PATIENT"),
+  availableSlots
+);
+
+router.post(
+  "/patient-book",
+  authenticate,
+  authorizeRoles("PATIENT"),
+  patientBook
+);
+
+router.get(
+  "/my-appointments",
+  authenticate,
+  authorizeRoles("PATIENT"),
+  myAppointments
+);
+
+router.delete(
+  "/my-appointments/:id",
+  authenticate,
+  authorizeRoles("PATIENT"),
+  cancelMyAppointment
+);
 
 // Create appointment: receptionist or super admin
 router.post(

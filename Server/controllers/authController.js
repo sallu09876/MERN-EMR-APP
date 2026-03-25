@@ -30,6 +30,11 @@ export const login = async (req, res, next) => {
       throw new Error("Invalid credentials");
     }
 
+    if (user.role === "PATIENT") {
+      res.status(403);
+      throw new Error("Please use the Patient Portal login");
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       await logAction({

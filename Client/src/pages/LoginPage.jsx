@@ -262,6 +262,29 @@ export const LoginPage = () => {
         .lp-btn:active:not(:disabled) { transform: translateY(0); }
         .lp-btn:disabled { opacity: 0.65; cursor: not-allowed; }
 
+        .lp-patient-btn {
+          width: 100%;
+          padding: 0.72rem 1rem;
+          border: 1.5px solid rgba(124,58,237,0.25);
+          background: rgba(124,58,237,0.08);
+          color: #6d28d9;
+          border-radius: 11px;
+          cursor: pointer;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 700;
+          font-size: 0.95rem;
+          transition: all 0.2s ease;
+          letter-spacing: 0.01em;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+        }
+        .lp-patient-btn:hover {
+          background: rgba(124,58,237,0.14);
+          border-color: rgba(124,58,237,0.45);
+          transform: translateY(-1px);
+        }
+        .lp-patient-btn:active { transform: translateY(0); }
+
         /* Spinner */
         .lp-spin {
           width: 16px; height: 16px;
@@ -526,6 +549,19 @@ export const LoginPage = () => {
                 )}
               </button>
             </form>
+
+            <div style={{ marginTop: "1rem", borderTop: "1px solid rgba(226,232,240,0.9)", paddingTop: "1rem" }}>
+              <div style={{ textAlign: "center", fontSize: "0.78rem", color: "#6b7280", marginBottom: "0.75rem" }}>
+                Are you a patient?
+              </div>
+              <button
+                type="button"
+                className="lp-patient-btn"
+                onClick={() => navigate("/patient/login")}
+              >
+                🧑‍⚕️ Patient Portal
+              </button>
+            </div>
 
             <div className="lp-footer">
               🔒 Secure access · HIPAA-compliant · 256-bit encrypted

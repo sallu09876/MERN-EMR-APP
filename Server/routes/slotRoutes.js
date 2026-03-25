@@ -8,7 +8,7 @@ const router = express.Router();
 router.get(
   "/",
   authenticate,
-  authorizeRoles("SUPER_ADMIN", "DOCTOR", "RECEPTIONIST"),
+  authorizeRoles("SUPER_ADMIN", "DOCTOR", "RECEPTIONIST", "PATIENT"),
   async (req, res, next) => {
     try {
       const { doctorId, date } = req.query;
