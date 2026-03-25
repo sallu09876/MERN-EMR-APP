@@ -30,15 +30,50 @@ const failedSchema = Joi.object({
 const formatDate = (d) =>
   new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 
-const getRazorpay = () => {
-  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-    const err = new Error("Razorpay not configured");
+const resolveRazorpayConfig = () => {
+  // Prefer explicit mode; otherwise default to "test" outside production.
+  const modeRaw = (process.env.RAZORPAY_MODE || "").trim().toLowerCase();
+  const mode =
+    modeRaw === "live" || modeRaw === "test"
+      ? modeRaw
+      : process.env.NODE_ENV === "production"
+        ? "live"
+        : "test";
+
+  // Support both a mode-based env scheme and the legacy single-key scheme.
+  const keyId =
+    (mode === "live" ? process.env.RAZORPAY_KEY_ID_LIVE : process.env.RAZORPAY_KEY_ID_TEST) ||
+    process.env.RAZORPAY_KEY_ID;
+  const keySecret =
+    (mode === "live"
+      ? process.env.RAZORPAY_KEY_SECRET_LIVE
+      : process.env.RAZORPAY_KEY_SECRET_TEST) || process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret) {
+    const err = new Error(
+      "Razorpay not configured. Set RAZORPAY_MODE and corresponding key env vars."
+    );
     err.statusCode = 500;
     throw err;
   }
+
+  // Guard: prevent accidental live-mode usage in dev which leads to confusing checkout failures.
+  if (process.env.NODE_ENV !== "production" && String(keyId).startsWith("rzp_live_")) {
+    const err = new Error(
+      "Razorpay is using LIVE keys in development. Use TEST keys (rzp_test_...) or set RAZORPAY_MODE=test."
+    );
+    err.statusCode = 500;
+    throw err;
+  }
+
+  return { mode, keyId, keySecret };
+};
+
+const getRazorpay = () => {
+  const { keyId, keySecret } = resolveRazorpayConfig();
   return new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
+    key_id: keyId,
+    key_secret: keySecret,
   });
 };
 
@@ -67,6 +102,7 @@ export const createOrder = async (req, res, next) => {
       throw new Error("Slot no longer available");
     }
 
+    const { keyId } = resolveRazorpayConfig();
     const razorpay = getRazorpay();
     const amount = 100; // paise = ₹1
     const order = await razorpay.orders.create({
@@ -91,7 +127,7 @@ export const createOrder = async (req, res, next) => {
       orderId: order.id,
       amount,
       currency: "INR",
-      keyId: process.env.RAZORPAY_KEY_ID,
+      keyId,
     });
   } catch (err) {
     next(err);
@@ -107,15 +143,16 @@ export const verifyPayment = async (req, res, next) => {
     }
 
     const { orderId, paymentId, razorpaySignature } = value;
+    const { keySecret } = resolveRazorpayConfig();
 
     const expected = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .createHmac("sha256", keySecret)
       .update(`${orderId}|${paymentId}`)
       .digest("hex");
 
     if (expected !== razorpaySignature) {
       res.status(400);
-      throw new Error("Payment verification failed");
+      throw new Error("Payment verification failed (signature mismatch)");
     }
 
     const payment = await Payment.findOne({ razorpayOrderId: orderId }).populate("patientId");
