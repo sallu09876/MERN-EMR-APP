@@ -57,6 +57,22 @@ const resolveRazorpayConfig = () => {
     throw err;
   }
 
+  // Enforce key/mode consistency to avoid Razorpay "merchant issue" checkout popups.
+  if (mode === "test" && !String(keyId).startsWith("rzp_test_")) {
+    const err = new Error(
+      "Razorpay config mismatch: RAZORPAY_MODE=test requires RAZORPAY test key_id (rzp_test_...)."
+    );
+    err.statusCode = 500;
+    throw err;
+  }
+  if (mode === "live" && !String(keyId).startsWith("rzp_live_")) {
+    const err = new Error(
+      "Razorpay config mismatch: RAZORPAY_MODE=live requires Razorpay live key_id (rzp_live_...)."
+    );
+    err.statusCode = 500;
+    throw err;
+  }
+
   // Guard: prevent accidental live-mode usage in dev which leads to confusing checkout failures.
   if (process.env.NODE_ENV !== "production" && String(keyId).startsWith("rzp_live_")) {
     const err = new Error(
@@ -102,7 +118,7 @@ export const createOrder = async (req, res, next) => {
       throw new Error("Slot no longer available");
     }
 
-    const { keyId } = resolveRazorpayConfig();
+    const { keyId, mode } = resolveRazorpayConfig();
     const razorpay = getRazorpay();
     const amount = 100; // paise = ₹1
     const order = await razorpay.orders.create({
@@ -128,6 +144,7 @@ export const createOrder = async (req, res, next) => {
       amount,
       currency: "INR",
       keyId,
+      mode: process.env.NODE_ENV === "production" ? undefined : mode,
     });
   } catch (err) {
     next(err);
