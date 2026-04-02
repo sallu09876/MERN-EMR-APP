@@ -207,6 +207,7 @@
   .stat-card.navy::before { background: var(--navy); }
   .stat-card.gold::before { background: var(--gold); }
   .stat-card.green::before { background: #10b981; }
+  .stat-card.orange::before { background: #f59e0b; }
   .stat-card.red::before { background: #ef4444; }
   .stat-card.violet::before { background: #8b5cf6; }
 

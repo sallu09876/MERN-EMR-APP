@@ -18,6 +18,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import patientAdminRoutes from "./routes/patientAdminRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import revenueRoutes from "./routes/revenueRoutes.js";
 import { seedDepartments } from "./controllers/departmentController.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -76,6 +77,7 @@ app.use("/api/slots", slotRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/patients", patientAdminRoutes);
+app.use("/api/admin/revenue", revenueRoutes);
 app.use("/api/departments", departmentRoutes);
 
 // 404 + error handlers

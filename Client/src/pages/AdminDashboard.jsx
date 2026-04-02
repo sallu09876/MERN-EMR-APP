@@ -1,6 +1,38 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import api from "../services/api.js";
+import { toastError } from "../utils/toast.js";
+
+const avatarUrlFor = (person) => {
+  const name = person?.name || "Patient";
+  return person?.profilePhoto
+    ? person.profilePhoto
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=8b5cf6&color=fff&size=128`;
+};
+
+const fmtINR = (paise) => `₹${(Number(paise ?? 0) / 100).toFixed(2)}`;
+
+const fmtDate = (d) => {
+  if (!d) return "—";
+  try {
+    return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  } catch {
+    return "—";
+  }
+};
+
+const fmtPaymentId = (id) => {
+  if (!id) return "—";
+  const s = String(id);
+  return s.length > 8 ? `${s.slice(0, 8)}...` : s;
+};
+
+const fmtSlotTime = (t) => (t ? String(t) : "—");
+
+const RevShimmer = ({ width = "100%", height = 14 }) => (
+  <div className="rev-shimmer" style={{ width, height }} />
+);
 
 const NavCard = ({ to, icon, title, description, color }) => (
   <Link to={to} className="anc-card" style={{ "--anc-color": color }}>
@@ -17,6 +49,50 @@ export const AdminDashboard = () => {
   const { user } = useAuth();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const monthLabel = useMemo(() => {
+    return new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  }, []);
+
+  const [loadingRevenue, setLoadingRevenue] = useState(false);
+  const [revenueStats, setRevenueStats] = useState(null);
+  const [recentPaidBookings, setRecentPaidBookings] = useState([]);
+
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+
+    let active = true;
+    setLoadingRevenue(true);
+    setRevenueStats(null);
+    setRecentPaidBookings([]);
+
+    Promise.all([api.get("/api/admin/revenue/stats"), api.get("/api/admin/revenue/recent")])
+      .then(([statsRes, recentRes]) => {
+        if (!active) return;
+        setRevenueStats(statsRes?.data?.data || null);
+        const recent = recentRes?.data?.data || [];
+        setRecentPaidBookings(recent.slice(0, 10));
+      })
+      .catch(() => {
+        toastError("Failed to load revenue data");
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoadingRevenue(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isSuperAdmin]);
+
+  const totalRevenue = revenueStats?.totalRevenue ?? 0;
+  const thisMonthRevenue = revenueStats?.thisMonthRevenue ?? 0;
+  const todayRevenue = revenueStats?.todayRevenue ?? 0;
+  const totalPaidBookings = revenueStats?.totalPaidBookings ?? 0;
+  const failedPayments = revenueStats?.failedPayments ?? 0;
+  const pendingPayments = revenueStats?.pendingPayments ?? 0;
 
   return (
     <div style={{ animation: "fadeUp 0.4s ease" }}>
@@ -95,6 +171,37 @@ export const AdminDashboard = () => {
         }
         .anc-sub { color: var(--text-muted); margin: 0.2rem 0 0; font-size: 0.875rem; }
         @media (min-width: 768px) { .anc-header { margin-bottom: 2rem; } }
+
+        /* ── Revenue & payments ── */
+        .rev-section { margin-top: 1.75rem; }
+        .rev-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+        @media (max-width: 767px) { .rev-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        .rev-stat-wrap { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; min-height: 110px; }
+        .rev-stat-sub { margin: 0; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); line-height: 1.2; }
+        .rev-stat-value { margin: 0.25rem 0 0; font-size: 2rem; font-weight: 800; color: var(--navy); font-family: 'DM Serif Display',serif; line-height: 1.1; }
+        .rev-stat-emoji { font-size: 1.55rem; line-height: 1; padding-top: 0.15rem; }
+
+        .rev-shimmer {
+          background: linear-gradient(90deg,var(--surface-2) 25%,var(--surface-3) 50%,var(--surface-2) 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.4s infinite;
+          border-radius: 10px;
+        }
+
+        .rev-table-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+        .rev-table-title { margin: 0; font-family: 'DM Serif Display',serif; font-size: 1.35rem; color: var(--navy); }
+        .rev-table-wrap { overflow-x: auto; }
+        .rev-cards { display: none; }
+        @media (max-width: 767px) {
+          .rev-table-wrap { display: none !important; }
+          .rev-cards { display: block !important; padding: 0.75rem 0; }
+          .rev-card {
+            background: white; border-radius: 14px; padding: 1rem; margin-bottom: 0.75rem;
+            border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+          }
+        }
+        @media (min-width: 768px) { .rev-cards { display: none !important; } }
       `}</style>
 
       <div className="anc-header">
@@ -111,6 +218,249 @@ export const AdminDashboard = () => {
         <NavCard to="/scheduler"           icon="📅"  title="Appointment Scheduler" description="Browse and book available doctor slots"               color="#10b981" />
         <NavCard to="/appointments/list"   icon="📋"  title="All Appointments"      description="View, edit, and manage all scheduled appointments"    color="#3b82f6" />
       </div>
+
+      {isSuperAdmin && (
+        <div className="rev-section">
+          <div className="rev-table-top" style={{ marginBottom: "1rem" }}>
+            <div>
+              <p className="rev-stat-sub" style={{ fontSize: "0.72rem", marginBottom: "0.35rem", color: "var(--teal)" }}>
+                Revenue & Payments
+              </p>
+              <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                Live overview of bookings and payment status
+              </p>
+            </div>
+          </div>
+
+          <div className="rev-stats-grid">
+            {/* Card 1 - Total Revenue */}
+            <div className="stat-card green" style={{ padding: "1.25rem 1.5rem" }}>
+              <div className="rev-stat-wrap">
+                <div style={{ minWidth: 0 }}>
+                  <p className="rev-stat-sub">All time</p>
+                  {loadingRevenue ? (
+                    <div style={{ marginTop: "0.55rem" }}>
+                      <RevShimmer width="120px" height="42px" />
+                    </div>
+                  ) : (
+                    <p className="rev-stat-value">{fmtINR(totalRevenue)}</p>
+                  )}
+                </div>
+                <div className="rev-stat-emoji" aria-hidden>💰</div>
+              </div>
+            </div>
+
+            {/* Card 2 - This Month */}
+            <div className="stat-card teal" style={{ padding: "1.25rem 1.5rem" }}>
+              <div className="rev-stat-wrap">
+                <div style={{ minWidth: 0 }}>
+                  <p className="rev-stat-sub">{monthLabel}</p>
+                  {loadingRevenue ? (
+                    <div style={{ marginTop: "0.55rem" }}>
+                      <RevShimmer width="120px" height="42px" />
+                    </div>
+                  ) : (
+                    <p className="rev-stat-value">{fmtINR(thisMonthRevenue)}</p>
+                  )}
+                </div>
+                <div className="rev-stat-emoji" aria-hidden>📅</div>
+              </div>
+            </div>
+
+            {/* Card 3 - Today */}
+            <div className="stat-card orange" style={{ padding: "1.25rem 1.5rem" }}>
+              <div className="rev-stat-wrap">
+                <div style={{ minWidth: 0 }}>
+                  <p className="rev-stat-sub">Today's earnings</p>
+                  {loadingRevenue ? (
+                    <div style={{ marginTop: "0.55rem" }}>
+                      <RevShimmer width="120px" height="42px" />
+                    </div>
+                  ) : (
+                    <p className="rev-stat-value">{fmtINR(todayRevenue)}</p>
+                  )}
+                </div>
+                <div className="rev-stat-emoji" aria-hidden>⚡</div>
+              </div>
+            </div>
+
+            {/* Card 4 - Total Paid Bookings */}
+            <div className="stat-card violet" style={{ padding: "1.25rem 1.5rem" }}>
+              <div className="rev-stat-wrap">
+                <div style={{ minWidth: 0 }}>
+                  {loadingRevenue ? (
+                    <>
+                      <RevShimmer width="190px" height="16px" />
+                      <div style={{ marginTop: "0.55rem" }}>
+                        <RevShimmer width="90px" height="42px" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="rev-stat-sub">
+                        {failedPayments} failed · {pendingPayments} pending
+                      </p>
+                      <p className="rev-stat-value">{totalPaidBookings}</p>
+                    </>
+                  )}
+                </div>
+                <div className="rev-stat-emoji" aria-hidden>🎫</div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "0.25rem" }}>
+            <div className="rev-table-top">
+              <h2 className="rev-table-title">Recent Paid Bookings</h2>
+              <button className="btn-secondary btn-sm" onClick={() => {}} disabled={loadingRevenue}>
+                View All
+              </button>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="rev-cards">
+              {loadingRevenue ? (
+                <>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="rev-card">
+                      <RevShimmer width="70%" height="16" />
+                      <div style={{ marginTop: "0.75rem", display: "flex", justifyContent: "space-between", gap: "1rem" }}>
+                        <RevShimmer width="55%" height="38" />
+                        <RevShimmer width="30%" height="38" />
+                      </div>
+                      <div style={{ marginTop: "0.75rem" }}>
+                        <RevShimmer width="90%" height="14" />
+                        <div style={{ marginTop: "0.5rem" }}><RevShimmer width="80%" height="14" /></div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : recentPaidBookings.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "2rem 0.75rem", color: "var(--text-muted)" }}>
+                  <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🎫</div>
+                  <p style={{ margin: 0, fontWeight: 600 }}>No paid bookings yet</p>
+                  <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem" }}>As soon as customers pay, it will show up here.</p>
+                </div>
+              ) : (
+                recentPaidBookings.map((p) => (
+                  <div key={p._id} className="rev-card">
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", minWidth: 0 }}>
+                        <div style={{ width: "44px", height: "44px", borderRadius: "50%", overflow: "hidden", background: "var(--surface-2)", flexShrink: 0 }}>
+                          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                          <img src={avatarUrlFor(p?.patientId)} style={{ width: "44px", height: "44px", objectFit: "cover" }} />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 800, fontSize: "0.95rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {p?.patientId?.name || "—"}
+                          </div>
+                          <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {p?.doctorId?.name || "—"}{p?.doctorId?.department ? ` · ${p.doctorId.department}` : ""}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ fontWeight: 900, fontFamily: "'DM Serif Display',serif", color: "var(--navy)", fontSize: "1.25rem", lineHeight: 1.1 }}>
+                        {fmtINR(p?.amount)}
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: "0.6rem", color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+                      {fmtDate(p?.appointmentDate)} · {fmtSlotTime(p?.slotStartTime)}
+                    </div>
+
+                    <div style={{ marginTop: "0.35rem", color: "var(--text-muted)", fontSize: "0.82rem" }}>
+                      Payment: {fmtPaymentId(p?.razorpayPaymentId)}
+                    </div>
+
+                    <div style={{ marginTop: "0.35rem", color: "var(--text-muted)", fontSize: "0.82rem" }}>
+                      Paid At: {fmtDate(p?.createdAt)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop table */}
+            <div className="rev-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Doctor + Department</th>
+                    <th>Date & Time</th>
+                    <th>Amount</th>
+                    <th>Payment ID</th>
+                    <th>Paid At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loadingRevenue ? (
+                    <>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i}>
+                          <td><RevShimmer width="140px" height="14" /></td>
+                          <td><RevShimmer width="160px" height="14" /></td>
+                          <td><RevShimmer width="120px" height="14" /></td>
+                          <td><RevShimmer width="80px" height="14" /></td>
+                          <td><RevShimmer width="120px" height="14" /></td>
+                          <td><RevShimmer width="120px" height="14" /></td>
+                        </tr>
+                      ))}
+                    </>
+                  ) : recentPaidBookings.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)", padding: "2.25rem 1rem" }}>
+                        No paid bookings found
+                      </td>
+                    </tr>
+                  ) : (
+                    recentPaidBookings.map((p) => (
+                      <tr key={p._id}>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                            <div style={{ width: "36px", height: "36px", borderRadius: "50%", overflow: "hidden", background: "var(--surface-2)", flexShrink: 0 }}>
+                              {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                              <img src={avatarUrlFor(p?.patientId)} style={{ width: "36px", height: "36px", objectFit: "cover" }} />
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontWeight: 800, fontSize: "0.9rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {p?.patientId?.name || "—"}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+                          <div style={{ fontWeight: 800 }}>{p?.doctorId?.name || "—"}</div>
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginTop: "0.2rem" }}>
+                            {p?.doctorId?.department || ""}
+                          </div>
+                        </td>
+
+                        <td style={{ whiteSpace: "nowrap", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+                          {fmtDate(p?.appointmentDate)} · {fmtSlotTime(p?.slotStartTime)}
+                        </td>
+
+                        <td style={{ fontWeight: 900, fontFamily: "'DM Serif Display',serif", color: "var(--navy)", whiteSpace: "nowrap" }}>
+                          {fmtINR(p?.amount)}
+                        </td>
+
+                        <td style={{ whiteSpace: "nowrap", color: "var(--text-secondary)" }}>
+                          {fmtPaymentId(p?.razorpayPaymentId)}
+                        </td>
+
+                        <td style={{ whiteSpace: "nowrap", color: "var(--text-muted)" }}>
+                          {fmtDate(p?.createdAt)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
