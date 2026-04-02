@@ -142,3 +142,38 @@ export const getRevenueChart = async (req, res, next) => {
   }
 };
 
+export const getAppointmentsByDepartment = async (req, res, next) => {
+  try {
+    const rows = await Appointment.aggregate([
+      {
+        $lookup: {
+          from: "doctors",
+          localField: "doctorId",
+          foreignField: "_id",
+          as: "doctor",
+        },
+      },
+      { $unwind: "$doctor" },
+      {
+        $group: {
+          _id: "$doctor.department",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 8 },
+    ]);
+
+    const data = (rows || [])
+      .filter((r) => r?._id)
+      .map((r) => ({
+        department: r._id,
+        count: r.count,
+      }));
+
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+};
+

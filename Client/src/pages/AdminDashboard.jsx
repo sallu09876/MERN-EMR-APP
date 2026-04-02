@@ -3,6 +3,19 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import api from "../services/api.js";
 import { toastError } from "../utils/toast.js";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
 const avatarUrlFor = (person) => {
   const name = person?.name || "Patient";
@@ -29,6 +42,16 @@ const fmtPaymentId = (id) => {
 };
 
 const fmtSlotTime = (t) => (t ? String(t) : "—");
+
+// Format YYYY-MM-DD date string into a short day name
+const formatDay = (dateStr) => {
+  if (!dateStr) return "—";
+  try {
+    return new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" });
+  } catch {
+    return "—";
+  }
+};
 
 const RevShimmer = ({ width = "100%", height = 14 }) => (
   <div className="rev-shimmer" style={{ width, height }} />
@@ -59,6 +82,10 @@ export const AdminDashboard = () => {
   const [revenueStats, setRevenueStats] = useState(null);
   const [recentPaidBookings, setRecentPaidBookings] = useState([]);
 
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  const [chartData, setChartData] = useState([]);
+  const [byDepartment, setByDepartment] = useState([]);
+
   useEffect(() => {
     if (!isSuperAdmin) return;
 
@@ -86,6 +113,64 @@ export const AdminDashboard = () => {
       active = false;
     };
   }, [isSuperAdmin]);
+
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+
+    let active = true;
+    setLoadingAnalytics(true);
+    setChartData([]);
+    setByDepartment([]);
+
+    Promise.all([
+      api.get("/api/admin/revenue/chart"),
+      api.get("/api/admin/stats/by-department"),
+    ])
+      .then(([chartRes, deptRes]) => {
+        if (!active) return;
+        setChartData(chartRes?.data?.data || []);
+        setByDepartment(deptRes?.data?.data || []);
+      })
+      .catch(() => {
+        toastError("Failed to load analytics data");
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoadingAnalytics(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isSuperAdmin]);
+
+  const formattedWeekData = useMemo(() => {
+    const list = Array.isArray(chartData) ? chartData : [];
+    return list.map((d) => ({
+      day: formatDay(d?.date),
+      "Patient Bookings": d?.paid ?? 0,
+      "Walk-in": d?.walkIn ?? 0,
+    }));
+  }, [chartData]);
+
+  const deptChartData = useMemo(() => {
+    const list = Array.isArray(byDepartment) ? byDepartment : [];
+    return list.map((d) => ({
+      name: d?.department,
+      value: d?.count ?? 0,
+    }));
+  }, [byDepartment]);
+
+  const COLORS = [
+    "#0e9fa0",
+    "#0a1628",
+    "#8b5cf6",
+    "#f59e0b",
+    "#10b981",
+    "#ef4444",
+    "#3b82f6",
+    "#ec4899",
+  ];
 
   const totalRevenue = revenueStats?.totalRevenue ?? 0;
   const thisMonthRevenue = revenueStats?.thisMonthRevenue ?? 0;
@@ -220,7 +305,8 @@ export const AdminDashboard = () => {
       </div>
 
       {isSuperAdmin && (
-        <div className="rev-section">
+        <>
+          <div className="rev-section">
           <div className="rev-table-top" style={{ marginBottom: "1rem" }}>
             <div>
               <p className="rev-stat-sub" style={{ fontSize: "0.72rem", marginBottom: "0.35rem", color: "var(--teal)" }}>
@@ -460,6 +546,352 @@ export const AdminDashboard = () => {
             </div>
           </div>
         </div>
+
+        <div style={{ marginTop: "1.75rem" }}>
+          <h2
+            style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontSize: "1.4rem",
+              color: "var(--navy)",
+              marginBottom: "1rem",
+            }}
+          >
+            📊 Analytics
+          </h2>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "1.25rem",
+              marginBottom: "2rem",
+            }}
+          >
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                padding: "1.5rem",
+                border: "1px solid var(--border)",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              <h3
+                style={{
+                  margin: "0 0 1rem",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  color: "var(--navy)",
+                }}
+              >
+                Appointments This Week
+              </h3>
+
+              {loadingAnalytics ? (
+                <div
+                  className="rev-shimmer"
+                  style={{
+                    width: "100%",
+                    height: 260,
+                    borderRadius: "10px",
+                    border: "1px solid var(--border)",
+                  }}
+                />
+              ) : formattedWeekData.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "3rem 1rem",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  <div style={{ fontSize: "2rem" }}>📊</div>
+                  <p style={{ margin: 0, fontWeight: 600 }}>No appointment data yet</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={formattedWeekData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis
+                      dataKey="day"
+                      tick={{ fontSize: 12, fill: "var(--text-muted)" }}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 12, fill: "var(--text-muted)" }}
+                      allowDecimals={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: "10px",
+                        border: "1px solid var(--border)",
+                        fontSize: "0.8rem",
+                      }}
+                    />
+                    <Legend verticalAlign="bottom" />
+                    <Bar
+                      dataKey="Patient Bookings"
+                      fill="#0e9fa0"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="Walk-in"
+                      fill="#0a1628"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div
+              style={{
+                background: "white",
+                borderRadius: "16px",
+                padding: "1.5rem",
+                border: "1px solid var(--border)",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              <h3
+                style={{
+                  margin: "0 0 1rem",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  color: "var(--navy)",
+                }}
+              >
+                Appointments by Department
+              </h3>
+
+              {loadingAnalytics ? (
+                <div
+                  className="rev-shimmer"
+                  style={{
+                    width: "100%",
+                    height: 260,
+                    borderRadius: "10px",
+                    border: "1px solid var(--border)",
+                  }}
+                />
+              ) : deptChartData.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "3rem 1rem",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  <div style={{ fontSize: "2rem" }}>📊</div>
+                  <p style={{ margin: 0, fontWeight: 600 }}>No appointment data yet</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={260}>
+                  <PieChart>
+                    <Pie
+                      data={deptChartData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      dataKey="value"
+                      label={({ name, value }) => `${name} (${value})`}
+                      labelLine={false}
+                    >
+                      {deptChartData.map((entry, index) => (
+                        <Cell
+                          key={`${entry?.name}-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: "10px",
+                        border: "1px solid var(--border)",
+                        fontSize: "0.8rem",
+                      }}
+                    />
+                    <Legend verticalAlign="bottom" />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+          </div>
+
+          {false && (
+            <div style={{ marginTop: "1.75rem" }}>
+            <h2
+              style={{
+                fontFamily: "'DM Serif Display', serif",
+                fontSize: "1.4rem",
+                color: "var(--navy)",
+                marginBottom: "1rem",
+              }}
+            >
+              📊 Analytics
+            </h2>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: "1.25rem",
+                marginBottom: "2rem",
+              }}
+            >
+              <div
+                style={{
+                  background: "white",
+                  borderRadius: "16px",
+                  padding: "1.5rem",
+                  border: "1px solid var(--border)",
+                  boxShadow: "var(--shadow-sm)",
+                }}
+              >
+                <h3
+                  style={{
+                    margin: "0 0 1rem",
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    color: "var(--navy)",
+                  }}
+                >
+                  Appointments This Week
+                </h3>
+
+                {loadingAnalytics ? (
+                  <div
+                    className="rev-shimmer"
+                    style={{
+                      width: "100%",
+                      height: 260,
+                      borderRadius: "10px",
+                      border: "1px solid var(--border)",
+                    }}
+                  />
+                ) : formattedWeekData.length === 0 ? (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "3rem 1rem",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    <div style={{ fontSize: "2rem" }}>📊</div>
+                    <p style={{ margin: 0, fontWeight: 600 }}>No appointment data yet</p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={formattedWeekData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis
+                        dataKey="day"
+                        tick={{ fontSize: 12, fill: "var(--text-muted)" }}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 12, fill: "var(--text-muted)" }}
+                        allowDecimals={false}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: "10px",
+                          border: "1px solid var(--border)",
+                          fontSize: "0.8rem",
+                        }}
+                      />
+                      <Legend verticalAlign="bottom" />
+                      <Bar
+                        dataKey="Patient Bookings"
+                        fill="#0e9fa0"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="Walk-in"
+                        fill="#0a1628"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+
+              <div
+                style={{
+                  background: "white",
+                  borderRadius: "16px",
+                  padding: "1.5rem",
+                  border: "1px solid var(--border)",
+                  boxShadow: "var(--shadow-sm)",
+                }}
+              >
+                <h3
+                  style={{
+                    margin: "0 0 1rem",
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    color: "var(--navy)",
+                  }}
+                >
+                  Appointments by Department
+                </h3>
+
+                {loadingAnalytics ? (
+                  <div
+                    className="rev-shimmer"
+                    style={{
+                      width: "100%",
+                      height: 260,
+                      borderRadius: "10px",
+                      border: "1px solid var(--border)",
+                    }}
+                  />
+                ) : deptChartData.length === 0 ? (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "3rem 1rem",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    <div style={{ fontSize: "2rem" }}>📊</div>
+                    <p style={{ margin: 0, fontWeight: 600 }}>No appointment data yet</p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={260}>
+                    <PieChart>
+                      <Pie
+                        data={deptChartData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={90}
+                        dataKey="value"
+                        label={({ name, value }) => `${name} (${value})`}
+                        labelLine={false}
+                      >
+                        {deptChartData.map((entry, index) => (
+                          <Cell
+                            key={`${entry?.name}-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: "10px",
+                          border: "1px solid var(--border)",
+                          fontSize: "0.8rem",
+                        }}
+                      />
+                      <Legend verticalAlign="bottom" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        </>
       )}
     </div>
   );

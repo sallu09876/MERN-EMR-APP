@@ -7,6 +7,7 @@ import {
   deleteReceptionist,
 } from "../controllers/userController.js";
 import { getSystemStats } from "../controllers/adminController.js";
+import { getAppointmentsByDepartment } from "../controllers/revenueController.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 
@@ -56,6 +57,13 @@ router.get(
   authenticate,
   authorizeRoles("SUPER_ADMIN"),
   getSystemStats
+);
+
+router.get(
+  "/stats/by-department",
+  authenticate,
+  authorizeRoles("SUPER_ADMIN"),
+  getAppointmentsByDepartment
 );
 
 export default router;
