@@ -1,5 +1,5 @@
+import "./env.js";
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -19,17 +19,8 @@ import patientAdminRoutes from "./routes/patientAdminRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import revenueRoutes from "./routes/revenueRoutes.js";
-import { seedDepartments } from "./controllers/departmentController.js";
-import path from "path";
-import { fileURLToPath } from "url";
-
-dotenv.config();
 
 const app = express();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Connect to MongoDB
 connectDB();
@@ -38,9 +29,30 @@ connectDB();
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+    // In dev, the frontend might run on `localhost:5173` while some setups (e.g. docker)
+    // set `CLIENT_ORIGIN` to `localhost:3000`. If CORS doesn't match, axios errors
+    // won't expose `response.data.message` and the UI falls back to a generic message.
+    origin: (origin, callback) => {
+      // Allow non-browser requests (no Origin header)
+      if (!origin) return callback(null, true);
+
+      const envOrigin = process.env.CLIENT_ORIGIN;
+      const allowedOrigins = [
+        envOrigin,
+        "http://localhost:5173",
+        "http://localhost:3000",
+      ]
+        .filter(Boolean)
+        .map((o) => String(o).trim());
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
+    },
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -89,4 +101,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-

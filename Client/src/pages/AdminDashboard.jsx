@@ -75,6 +75,15 @@ export const AdminDashboard = () => {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 480;
   const monthLabel = useMemo(() => {
     return new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" });
   }, []);
@@ -616,22 +625,33 @@ export const AdminDashboard = () => {
         </div>
 
         <div style={{ marginTop: "1.75rem" }}>
-          <h2
+          <div
             style={{
-              fontFamily: "'DM Serif Display', serif",
-              fontSize: "1.4rem",
-              color: "var(--navy)",
+              display: "flex",
+              alignItems: isMobile ? "flex-start" : "center",
+              flexDirection: isMobile ? "column" : "row",
+              justifyContent: "space-between",
               marginBottom: "1rem",
+              gap: "0.5rem",
             }}
           >
-            📊 Analytics
-          </h2>
+            <h2
+              style={{
+                fontFamily: "'DM Serif Display', serif",
+                fontSize: isMobile ? "1.2rem" : "1.4rem",
+                color: "var(--navy)",
+                margin: 0,
+              }}
+            >
+              📊 Analytics
+            </h2>
+          </div>
 
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "1.25rem",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "1rem",
               marginBottom: "2rem",
             }}
           >
@@ -639,15 +659,17 @@ export const AdminDashboard = () => {
               style={{
                 background: "white",
                 borderRadius: "16px",
-                padding: "1.5rem",
+                padding: isMobile ? "1rem" : "1.5rem",
                 border: "1px solid var(--border)",
                 boxShadow: "var(--shadow-sm)",
+                minWidth: 0,
+                overflow: "hidden",
               }}
             >
               <h3
                 style={{
                   margin: "0 0 1rem",
-                  fontSize: "1rem",
+                  fontSize: isMobile ? "0.9rem" : "1rem",
                   fontWeight: 600,
                   color: "var(--navy)",
                 }}
@@ -660,7 +682,7 @@ export const AdminDashboard = () => {
                   className="rev-shimmer"
                   style={{
                     width: "100%",
-                    height: 260,
+                    height: isMobile ? 200 : 260,
                     borderRadius: "10px",
                     border: "1px solid var(--border)",
                   }}
@@ -677,34 +699,38 @@ export const AdminDashboard = () => {
                   <p style={{ margin: 0, fontWeight: 600 }}>No appointment data yet</p>
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={formattedWeekData}>
+                <ResponsiveContainer width="100%" height={isMobile ? 200 : 260}>
+                  <BarChart data={formattedWeekData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                     <XAxis
                       dataKey="day"
-                      tick={{ fontSize: 12, fill: "var(--text-muted)" }}
+                      tick={{ fontSize: isMobile ? 10 : 12, fill: "var(--text-muted)" }}
+                      interval={0}
                     />
                     <YAxis
-                      tick={{ fontSize: 12, fill: "var(--text-muted)" }}
+                      tick={{ fontSize: isMobile ? 10 : 12, fill: "var(--text-muted)" }}
                       allowDecimals={false}
+                      width={30}
                     />
                     <Tooltip
                       contentStyle={{
                         borderRadius: "10px",
                         border: "1px solid var(--border)",
-                        fontSize: "0.8rem",
+                        fontSize: "0.78rem",
                       }}
                     />
-                    <Legend verticalAlign="bottom" />
+                    <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: isMobile ? "0.72rem" : "0.8rem" }} />
                     <Bar
                       dataKey="Patient Bookings"
                       fill="#0e9fa0"
                       radius={[4, 4, 0, 0]}
+                      maxBarSize={40}
                     />
                     <Bar
                       dataKey="Walk-in"
                       fill="#0a1628"
                       radius={[4, 4, 0, 0]}
+                      maxBarSize={40}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -715,15 +741,17 @@ export const AdminDashboard = () => {
               style={{
                 background: "white",
                 borderRadius: "16px",
-                padding: "1.5rem",
+                padding: isMobile ? "1rem" : "1.5rem",
                 border: "1px solid var(--border)",
                 boxShadow: "var(--shadow-sm)",
+                minWidth: 0,
+                overflow: "hidden",
               }}
             >
               <h3
                 style={{
                   margin: "0 0 1rem",
-                  fontSize: "1rem",
+                  fontSize: isMobile ? "0.9rem" : "1rem",
                   fontWeight: 600,
                   color: "var(--navy)",
                 }}
@@ -736,7 +764,7 @@ export const AdminDashboard = () => {
                   className="rev-shimmer"
                   style={{
                     width: "100%",
-                    height: 260,
+                    height: isMobile ? 220 : 260,
                     borderRadius: "10px",
                     border: "1px solid var(--border)",
                   }}
@@ -753,16 +781,16 @@ export const AdminDashboard = () => {
                   <p style={{ margin: 0, fontWeight: 600 }}>No appointment data yet</p>
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={260}>
+                <ResponsiveContainer width="100%" height={isMobile ? 220 : 260}>
                   <PieChart>
                     <Pie
                       data={deptChartData}
                       cx="50%"
                       cy="50%"
-                      outerRadius={90}
+                      outerRadius={isMobile ? 70 : 90}
                       dataKey="value"
-                      label={({ name, value }) => `${name} (${value})`}
-                      labelLine={false}
+                      label={(d) => (isMobile ? `${d.value}` : `${d.name} (${d.value})`)}
+                      labelLine={!isMobile}
                     >
                       {deptChartData.map((entry, index) => (
                         <Cell
@@ -775,10 +803,17 @@ export const AdminDashboard = () => {
                       contentStyle={{
                         borderRadius: "10px",
                         border: "1px solid var(--border)",
-                        fontSize: "0.8rem",
+                        fontSize: "0.78rem",
+                      }}
+                      formatter={(value, name) => [value, name]}
+                    />
+                    <Legend
+                      verticalAlign="bottom"
+                      wrapperStyle={{
+                        fontSize: isMobile ? "0.68rem" : "0.78rem",
+                        paddingTop: "0.5rem",
                       }}
                     />
-                    <Legend verticalAlign="bottom" />
                   </PieChart>
                 </ResponsiveContainer>
               )}

@@ -1,5 +1,4 @@
 import Joi from "joi";
-import path from "path";
 
 import Patient from "../models/Patient.js";
 import User from "../models/User.js";
@@ -94,24 +93,19 @@ export const uploadProfilePhoto = async (req, res) => {
       throw new Error("No file uploaded");
     }
 
-    // Cloudinary upload returns an https URL; disk storage returns a filesystem path.
-    let url = req.file.secure_url || req.file.url || "";
-    if (!url && req.file.path) {
-      const destinationBase = path.basename(req.file.destination || "");
-      url = `/uploads/${destinationBase}/${req.file.filename}`;
-      // Make it absolute so the frontend can render it regardless of frontend origin.
-      url = `${req.protocol}://${req.get("host")}${url}`;
-    }
+    // `multer-storage-cloudinary` provides a permanent Cloudinary URL.
+    const profilePhoto =
+      req.file.secure_url || req.file.url || req.file.path || "";
 
-    if (!url) {
+    if (!profilePhoto) {
       res.status(400);
       throw new Error("Failed to process uploaded file");
     }
 
-    patient.profilePhoto = url;
+    patient.profilePhoto = profilePhoto;
     await patient.save();
 
-    res.json({ success: true, data: { profilePhoto: url } });
+    res.json({ success: true, data: { profilePhoto } });
   } catch (err) {
     res.status(500);
     res.json({ success: false, message: err.message || "Photo upload failed" });
