@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import api from "../../services/api.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 import { toastError, toastSuccess } from "../../utils/toast.js";
+import { exportToExcel, exportToPDF } from "../../utils/exportUtils.js";
 
 const badgeStyle = (status) => {
   if (status === "COMPLETED") return { background: "#f1f5f9", color: "#475569" };
@@ -9,6 +11,7 @@ const badgeStyle = (status) => {
 };
 
 export const PatientAppointmentsPage = () => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
 
@@ -56,10 +59,73 @@ export const PatientAppointmentsPage = () => {
     return <div style={{ padding: "3rem 1.5rem", textAlign: "center", color: "var(--text-muted)", animation: "fadeUp 0.3s ease" }}>Loading appointments…</div>;
   }
 
+  const patientName = user?.name || "Patient";
+
+  const handleExportPDF = () => {
+    if (appointments.length === 0) return;
+    exportToPDF({
+      title: "My Appointments — MedFlow",
+      subtitle: `${patientName} · Exported on ${new Date().toLocaleDateString()}`,
+      columns: ["Doctor", "Department", "Date", "Time", "Status", "Booked By", "Payment"],
+      rows: appointments.map((a) => [
+        a.doctorId?.name || a.patientName || "—",
+        a.doctorId?.department || "—",
+        a.appointmentDate,
+        a.slotStartTime,
+        a.status,
+        a.bookedBy,
+        a.paymentStatus === "PAID" ? "₹1 Paid" : "Walk-in",
+      ]),
+      filename: "my-appointments",
+    });
+    toastSuccess("Report downloaded successfully");
+  };
+
+  const handleExportExcel = () => {
+    if (appointments.length === 0) return;
+    exportToExcel({
+      sheetName: "My Appointments",
+      columns: ["Doctor", "Department", "Date", "Time", "Status", "Booked By", "Payment"],
+      rows: appointments.map((a) => [
+        a.doctorId?.name || a.patientName || "—",
+        a.doctorId?.department || "—",
+        a.appointmentDate,
+        a.slotStartTime,
+        a.status,
+        a.bookedBy,
+        a.paymentStatus === "PAID" ? "Paid ₹1" : "Walk-in",
+      ]),
+      filename: "my-appointments",
+    });
+    toastSuccess("Report downloaded successfully");
+  };
+
   return (
     <div style={{ animation: "fadeUp 0.4s ease" }}>
       <div className="page-header">
-        <h1>My Appointments</h1>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", gap: "0.75rem", flexWrap: "wrap" }}>
+          <h2 style={{ margin: 0, fontFamily: "'DM Serif Display', serif", color: "var(--navy)" }}>
+            My Appointments
+          </h2>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button
+              className="btn-secondary btn-sm"
+              onClick={handleExportPDF}
+              disabled={appointments.length === 0}
+              title={appointments.length === 0 ? "No data to export" : "Export as PDF"}
+            >
+              ↓ PDF
+            </button>
+            <button
+              className="btn-secondary btn-sm"
+              onClick={handleExportExcel}
+              disabled={appointments.length === 0}
+              title={appointments.length === 0 ? "No data to export" : "Export as Excel"}
+            >
+              ↓ Excel
+            </button>
+          </div>
+        </div>
         <p>View upcoming visits and cancel future appointments</p>
       </div>
 

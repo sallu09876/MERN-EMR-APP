@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import api from "../services/api.js";
-import { toastError } from "../utils/toast.js";
+import { toastError, toastSuccess } from "../utils/toast.js";
+import { exportToExcel, exportToPDF } from "../utils/exportUtils.js";
 import {
   BarChart,
   Bar,
@@ -178,6 +179,49 @@ export const AdminDashboard = () => {
   const totalPaidBookings = revenueStats?.totalPaidBookings ?? 0;
   const failedPayments = revenueStats?.failedPayments ?? 0;
   const pendingPayments = revenueStats?.pendingPayments ?? 0;
+
+  const recentPayments = recentPaidBookings;
+
+  const handleExportRevenuePDF = () => {
+    if (recentPayments.length === 0) return;
+    exportToPDF({
+      title: "MedFlow — Revenue Report",
+      subtitle: `Total Revenue: ₹${(totalRevenue / 100).toFixed(2)} · ${totalPaidBookings} paid bookings`,
+      columns: ["Patient", "Doctor", "Department", "Date", "Time", "Amount", "Payment ID", "Paid At"],
+      rows: recentPayments.map((p) => [
+        p.patientId?.name || "—",
+        p.doctorId?.name || "—",
+        p.doctorId?.department || "—",
+        p.appointmentDate,
+        p.slotStartTime,
+        `₹${(p.amount / 100).toFixed(2)}`,
+        p.razorpayPaymentId?.slice(0, 12) || "—",
+        new Date(p.createdAt).toLocaleDateString(),
+      ]),
+      filename: "medflow-revenue",
+    });
+    toastSuccess("Report downloaded successfully");
+  };
+
+  const handleExportRevenueExcel = () => {
+    if (recentPayments.length === 0) return;
+    exportToExcel({
+      sheetName: "Revenue Report",
+      columns: ["Patient", "Doctor", "Department", "Date", "Time", "Amount (₹)", "Payment ID", "Paid At"],
+      rows: recentPayments.map((p) => [
+        p.patientId?.name || "—",
+        p.doctorId?.name || "—",
+        p.doctorId?.department || "—",
+        p.appointmentDate,
+        p.slotStartTime,
+        (p.amount / 100).toFixed(2),
+        p.razorpayPaymentId || "—",
+        new Date(p.createdAt).toLocaleDateString(),
+      ]),
+      filename: "medflow-revenue",
+    });
+    toastSuccess("Report downloaded successfully");
+  };
 
   return (
     <div style={{ animation: "fadeUp 0.4s ease" }}>
@@ -396,8 +440,32 @@ export const AdminDashboard = () => {
           </div>
 
           <div style={{ marginTop: "0.25rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", gap: "1rem", flexWrap: "wrap" }}>
+              <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600, color: "var(--navy)" }}>
+                Recent Paid Bookings
+              </h3>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button
+                  className="btn-secondary btn-sm"
+                  onClick={handleExportRevenuePDF}
+                  disabled={recentPayments.length === 0}
+                  title={recentPayments.length === 0 ? "No data to export" : "Export as PDF"}
+                >
+                  ↓ PDF
+                </button>
+                <button
+                  className="btn-secondary btn-sm"
+                  onClick={handleExportRevenueExcel}
+                  disabled={recentPayments.length === 0}
+                  title={recentPayments.length === 0 ? "No data to export" : "Export as Excel"}
+                >
+                  ↓ Excel
+                </button>
+              </div>
+            </div>
+
             <div className="rev-table-top">
-              <h2 className="rev-table-title">Recent Paid Bookings</h2>
+              <div />
               <button className="btn-secondary btn-sm" onClick={() => {}} disabled={loadingRevenue}>
                 View All
               </button>
