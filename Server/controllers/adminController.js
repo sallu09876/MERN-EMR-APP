@@ -1,13 +1,16 @@
 import Doctor from "../models/Doctor.js";
 import User from "../models/User.js";
 import Appointment from "../models/Appointment.js";
+import Patient from "../models/Patient.js";
 
 export const getSystemStats = async (req, res, next) => {
   try {
-    const [totalDoctors, totalReceptionists, totalAppointments] = await Promise.all([
+    const [totalDoctors, totalReceptionists, totalAppointments, totalPatients, totalUnverified] = await Promise.all([
       Doctor.countDocuments(),
       User.countDocuments({ role: "RECEPTIONIST" }),
       Appointment.countDocuments(),
+      Patient.countDocuments({ isVerified: true }),
+      Patient.countDocuments({ isVerified: false }),
     ]);
 
     const today = new Date();
@@ -27,6 +30,8 @@ export const getSystemStats = async (req, res, next) => {
         totalDoctors,
         totalReceptionists,
         totalAppointments,
+        totalPatients,
+        totalUnverified,
         todayAppointments,
         bookedCount,
         arrivedCount,

@@ -13,6 +13,7 @@ import { AppointmentListPage } from "../pages/AppointmentListPage.jsx";
 import { ReceptionistsPage } from "../pages/admin/ReceptionistsPage.jsx";
 import { SystemStatsPage } from "../pages/admin/SystemStatsPage.jsx";
 import { DoctorsPage } from "../pages/admin/DoctorsPage.jsx";
+import { PatientsPage } from "../pages/admin/PatientsPage.jsx";
 
 import { PatientLoginPage } from "../pages/patient/PatientLoginPage.jsx";
 import { PatientRegisterPage } from "../pages/patient/PatientRegisterPage.jsx";
@@ -68,6 +69,14 @@ export const AppRoutes = () => (
         element={
           <RoleRoute allowedRoles={["SUPER_ADMIN"]}>
             <ReceptionistsPage />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/admin/patients"
+        element={
+          <RoleRoute allowedRoles={["SUPER_ADMIN"]}>
+            <PatientsPage />
           </RoleRoute>
         }
       />

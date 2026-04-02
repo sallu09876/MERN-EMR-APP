@@ -76,11 +76,13 @@ export const SystemStatsPage = () => {
         ) : (
           <>
             <StatCard icon="👨‍⚕️" label="Total Doctors" value={stats.totalDoctors} color="#0ea5a0" delay={0} sub="Registered medical staff" />
-            <StatCard icon="🗂️" label="Receptionists" value={stats.totalReceptionists} color="#8b5cf6" delay={0.05} sub="Front desk personnel" />
+            <StatCard icon="🗂️" label="Total Receptionists" value={stats.totalReceptionists} color="#7c3aed" delay={0.05} sub="Front desk personnel" />
+            <StatCard icon="👥" label="Total Patients" value={stats.totalPatients} color="#8b5cf6" delay={0.3} sub={`${stats.totalUnverified ?? 0} unverified`} />
             <StatCard icon="📋" label="All Appointments" value={stats.totalAppointments} color="#3b82f6" delay={0.1} sub="Across all time" />
             <StatCard icon="📅" label="Today's Appointments" value={stats.todayAppointments} color="#f0a500" delay={0.15} sub={new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })} />
             <StatCard icon="🕐" label="Currently Booked" value={stats.bookedCount} color="#f97316" delay={0.2} sub="Awaiting check-in" />
             <StatCard icon="✅" label="Patients Arrived" value={stats.arrivedCount} color="#10b981" delay={0.25} sub="Checked in today" />
+            
           </>
         )}
       </div>

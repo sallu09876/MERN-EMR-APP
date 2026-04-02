@@ -106,6 +106,7 @@ export const AdminDashboard = () => {
       <div className="anc-grid">
         <NavCard to="/admin/doctors"       icon="👨‍⚕️" title="Manage Doctors"       description="Add, edit, or remove doctor accounts and schedules"   color="#0ea5a0" />
         <NavCard to="/admin/receptionists" icon="🗂️"  title="Receptionists"         description="Manage receptionist staff and login credentials"      color="#8b5cf6" />
+        <NavCard to="/admin/patients"      icon="👥"   title="Manage Patients"     description="View patient profiles and delete patient accounts"       color="#8b5cf6" />
         <NavCard to="/admin/stats"         icon="📊"  title="System Statistics"     description="View appointments, staff counts, and activity trends" color="#f0a500" />
         <NavCard to="/scheduler"           icon="📅"  title="Appointment Scheduler" description="Browse and book available doctor slots"               color="#10b981" />
         <NavCard to="/appointments/list"   icon="📋"  title="All Appointments"      description="View, edit, and manage all scheduled appointments"    color="#3b82f6" />

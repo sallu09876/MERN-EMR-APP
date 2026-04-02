@@ -7,6 +7,7 @@ const ROLE_LINKS = {
     { to: "/admin",               label: "Dashboard" },
     { to: "/admin/doctors",       label: "Doctors" },
     { to: "/admin/receptionists", label: "Receptionists" },
+    { to: "/admin/patients",      label: "Patients" },
     { to: "/admin/stats",         label: "Stats" },
     { to: "/scheduler",           label: "Scheduler" },
     { to: "/appointments/list",   label: "Appointments" },
