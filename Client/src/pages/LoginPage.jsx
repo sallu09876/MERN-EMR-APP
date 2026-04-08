@@ -1,18 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { ServerWakeSpinner } from "../components/ServerWakeSpinner.jsx";
 
 export const LoginPage = () => {
-  const { login, loading } = useAuth();
+  const { login, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [slowWarning, setSlowWarning] = useState(false);
+  const [serverStatus, setServerStatus] = useState("checking");
+  const slowTimerRef = useRef(null);
+
+  useEffect(() => {
+    const checkAndWarm = async () => {
+      const start = Date.now();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/health`, {
+          signal: controller.signal,
+        });
+        const elapsed = Date.now() - start;
+        setServerStatus(elapsed < 2000 ? "warm" : "cold");
+      } catch {
+        setServerStatus("cold");
+      } finally {
+        clearTimeout(timeout);
+      }
+    };
+
+    checkAndWarm();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
+    setSlowWarning(false);
+    slowTimerRef.current = setTimeout(() => {
+      setSlowWarning(true);
+    }, 4000);
+
     try {
       const user = await login(email, password);
       if (user.role === "SUPER_ADMIN") navigate("/admin");
@@ -20,6 +53,10 @@ export const LoginPage = () => {
       else navigate("/appointments");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password");
+    } finally {
+      if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
+      setLoading(false);
+      setSlowWarning(false);
     }
   };
 
@@ -538,12 +575,32 @@ export const LoginPage = () => {
                 </div>
               </div>
 
-              <button type="submit" className="lp-btn" disabled={loading}>
+              <button type="submit" className="lp-btn" disabled={loading || authLoading}>
                 {loading ? (
-                  <>
-                    <span className="lp-spin" />
-                    Signing in…
-                  </>
+                  <span
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "2px",
+                    }}
+                  >
+                    <span>{slowWarning ? "Waking up server..." : "Logging in..."}</span>
+                    {slowWarning && (
+                      <>
+                        <span
+                          style={{
+                            fontSize: "0.7rem",
+                            opacity: 0.8,
+                            fontWeight: 400,
+                          }}
+                        >
+                          Free server is starting up - this happens once, please wait
+                        </span>
+                        <ServerWakeSpinner message="Connecting to backend..." />
+                      </>
+                    )}
+                  </span>
                 ) : (
                   <>Sign In &rarr;</>
                 )}
@@ -567,6 +624,49 @@ export const LoginPage = () => {
               🔒 Secure access · HIPAA-compliant · 256-bit encrypted
             </div>
           </div>
+          {serverStatus === "cold" && (
+            <div
+              style={{
+                marginTop: "1rem",
+                padding: "0.65rem 1rem",
+                background: "rgba(245, 158, 11, 0.1)",
+                border: "1px solid rgba(245, 158, 11, 0.3)",
+                borderRadius: "10px",
+                fontSize: "0.78rem",
+                color: "#92400e",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                animation: "lp-fadeup 0.3s ease",
+              }}
+            >
+              <span>⚡</span>
+              <span>
+                Server is warming up - first login may take up to 30 seconds.
+                Subsequent logins will be instant.
+              </span>
+            </div>
+          )}
+
+          {serverStatus === "warm" && (
+            <div
+              style={{
+                marginTop: "1rem",
+                padding: "0.5rem 1rem",
+                background: "rgba(16, 185, 129, 0.08)",
+                border: "1px solid rgba(16, 185, 129, 0.2)",
+                borderRadius: "10px",
+                fontSize: "0.78rem",
+                color: "#065f46",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+            >
+              <span>🟢</span>
+              <span>Server is online</span>
+            </div>
+          )}
         </div>
       </div>
     </>

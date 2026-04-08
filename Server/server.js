@@ -19,6 +19,7 @@ import patientAdminRoutes from "./routes/patientAdminRoutes.js";
 import departmentRoutes from "./routes/departmentRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import revenueRoutes from "./routes/revenueRoutes.js";
+import { startKeepAlive } from "./utils/keepAlive.js";
 
 const app = express();
 
@@ -73,10 +74,16 @@ const apiLimiter = rateLimit({
 
 app.use("/api/", apiLimiter);
 
-// Health check
+// Health check — used by ping service and frontend pre-warm
 app.get("/health", (req, res) => {
-  res.json({ success: true, message: "API is running" });
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
 });
+
+// Optional: configure UptimeRobot/cron-job.org to ping /health externally.
 
 // API routes
 app.use("/api/auth", authRoutes);
@@ -100,4 +107,5 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  startKeepAlive();
 });
