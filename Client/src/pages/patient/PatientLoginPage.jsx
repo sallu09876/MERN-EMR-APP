@@ -127,7 +127,7 @@ export const PatientLoginPage = () => {
             </div>
           </form>
         </div>
-        {serverStatus === "cold" && (
+        {/* {serverStatus === "cold" && (
           <div
             style={{
               marginTop: "1rem",
@@ -169,7 +169,7 @@ export const PatientLoginPage = () => {
             <span>🟢</span>
             <span>Server is online</span>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

@@ -624,7 +624,7 @@ export const LoginPage = () => {
               🔒 Secure access · HIPAA-compliant · 256-bit encrypted
             </div>
           </div>
-          {serverStatus === "cold" && (
+          {/* {serverStatus === "cold" && (
             <div
               style={{
                 marginTop: "1rem",
@@ -666,7 +666,7 @@ export const LoginPage = () => {
               <span>🟢</span>
               <span>Server is online</span>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </>
