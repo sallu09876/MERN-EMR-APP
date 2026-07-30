@@ -332,10 +332,22 @@ VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
 ## 🔑 Default Credentials
 
 ```
-Super Admin:    superadmin@emr.com   /  Admin@1234
-Doctor:         arjun.menon@emr.com  /  Doctor@123
-Receptionist:   sneha.thomas@emr.com /  Recept@123
-Patient:        (self-register via Patient Portal)
+Admin:
+  superadmin@emr.com | Admin@1234
+
+Doctor:
+  arjun.menon@emr.com | Doctor@123
+  priya.nair@emr.com | Doctor@123
+
+Receptionist:
+  sneha.thomas@emr.com | Recept@123
+  divya.krishnan@emr.com | Recept@123
+  anoop.george@emr.com | Recept@123
+
+Patient:
+  sadikalameen9@gmail.com | Sadik9
+  patient@emr.com | Patient@1234
+  salmanrasheedm0@gmail.com | rahul123
 ```
 
 ---
