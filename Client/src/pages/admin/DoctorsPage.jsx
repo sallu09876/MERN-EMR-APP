@@ -5,6 +5,10 @@ import { Loader } from "../../components/Loader";
 
 const EMPTY = { name: "", department: "", email: "", password: "", workingHoursStart: "09:00", workingHoursEnd: "17:00", slotDuration: 30, breakStart: "", breakEnd: "" };
 
+const F = ({ label, children }) => (
+  <div><label className="form-label">{label}</label>{children}</div>
+);
+
 export const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);
   const [form, setForm] = useState(EMPTY);
@@ -106,9 +110,6 @@ export const DoctorsPage = () => {
     setTimeout(() => document.getElementById("doctor-form")?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
   };
 
-  const F = ({ label, children }) => (
-    <div><label className="form-label">{label}</label>{children}</div>
-  );
 
   return (
     <div>

@@ -5,6 +5,10 @@ import { Loader } from "../../components/Loader";
 
 const EMPTY = { name: "", email: "", password: "" };
 
+const F = ({ label, children }) => (
+  <div><label className="form-label">{label}</label>{children}</div>
+);
+
 export const ReceptionistsPage = () => {
   const [receptionists, setReceptionists] = useState([]);
   const [form, setForm] = useState(EMPTY);
@@ -54,9 +58,6 @@ export const ReceptionistsPage = () => {
     setTimeout(() => document.getElementById("rec-form")?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
   };
 
-  const F = ({ label, children }) => (
-    <div><label className="form-label">{label}</label>{children}</div>
-  );
 
   // Avatar initials color from name
   const avatarColor = (name) => {
