@@ -143,7 +143,7 @@ export const updateAppointment = async (req, res, next) => {
     const appointment = await Appointment.findByIdAndUpdate(
       req.params.id,
       value,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!appointment) {
@@ -191,7 +191,7 @@ export const markArrived = async (req, res, next) => {
     const appointment = await Appointment.findByIdAndUpdate(
       req.params.id,
       { status: "ARRIVED" },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!appointment) {

@@ -66,7 +66,7 @@ export const updateProfile = async (req, res, next) => {
     const patient = await Patient.findOneAndUpdate(
       { userId: req.user._id },
       { $set: updateData },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!patient) {

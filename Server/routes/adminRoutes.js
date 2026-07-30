@@ -37,7 +37,7 @@ router.put(
       const user = await User.findByIdAndUpdate(
         req.params.id,
         { name, email },
-        { new: true, runValidators: true }
+        { returnDocument: 'after', runValidators: true }
       ).select("-password");
       if (!user) { res.status(404); throw new Error("Receptionist not found"); }
       res.json({ success: true, data: user });

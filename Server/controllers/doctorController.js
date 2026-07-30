@@ -102,7 +102,7 @@ export const updateDoctor = async (req, res, next) => {
     }
 
     const doctor = await Doctor.findByIdAndUpdate(req.params.id, value, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     });
 

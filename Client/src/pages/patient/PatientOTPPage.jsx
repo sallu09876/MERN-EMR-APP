@@ -94,7 +94,7 @@ export const PatientOTPPage = () => {
   const masked = useMemo(() => maskEmail(email), [email]);
 
   useEffect(() => {
-    setSecondsLeft(10 * 60);
+    setSecondsLeft(1 * 60);
   }, [email, purpose]);
 
   useEffect(() => {
